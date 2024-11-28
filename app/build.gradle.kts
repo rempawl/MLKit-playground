@@ -1,6 +1,9 @@
+import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    id("org.jlleitschuh.gradle.ktlint") version "11.1.0"
 }
 
 android {
@@ -50,6 +53,15 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+    ktlint {
+        android = true
+        ignoreFailures = true
+        disabledRules.addAll("no-wildcard-imports", "final-newline")
+        reporters {
+            reporter(ReporterType.HTML)
+            reporter(ReporterType.PLAIN)
+        }
+    }
 }
 
 dependencies {
@@ -74,19 +86,15 @@ dependencies {
     implementation(libs.firebase.ml.model.interpreter)
     implementation(libs.material)
 
-    testImplementation(libs.mockk)
-    testImplementation(libs.mockk.android)
-    testImplementation(libs.mockk.agent)
     testImplementation(libs.koin.test.junit4)
     testImplementation(libs.junit)
-    testImplementation(libs.junit.jupiter)
 
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
     androidTestImplementation(libs.androidx.junit.ktx)
-    androidTestImplementation (libs.leakcanary.android.instrumentation) // todo add leaks rule to ui tests
+    androidTestImplementation(libs.leakcanary.android.instrumentation) // todo add leaks rule to ui tests
 
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)

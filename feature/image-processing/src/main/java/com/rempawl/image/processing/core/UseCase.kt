@@ -1,4 +1,4 @@
-package com.rempawl.image.processing
+package com.rempawl.image.processing.core
 
 // todo core module
 interface UseCase<Param, Result> {

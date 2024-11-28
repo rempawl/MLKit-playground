@@ -137,7 +137,7 @@ class MainActivity : ComponentActivity() {
 
     private fun processImage(uri: Uri) {
         viewModel.processImage(
-            inputImageProvider = { InputImage.fromFilePath(this@MainActivity, uri) },
+            inputImage = InputImage.fromFilePath(this@MainActivity, uri),
             imageUri = uri.toString()
         )
     }
