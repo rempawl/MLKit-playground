@@ -1,6 +1,5 @@
-package com.rempawl.mlkit_playground
+package com.rempawl.image.processing
 
-import android.graphics.Bitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.mlkit.vision.common.InputImage

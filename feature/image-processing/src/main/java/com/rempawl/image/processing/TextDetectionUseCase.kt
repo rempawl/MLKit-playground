@@ -1,4 +1,4 @@
-package com.rempawl.mlkit_playground
+package com.rempawl.image.processing
 
 import android.util.Log
 import androidx.core.graphics.toRectF
@@ -12,15 +12,12 @@ class TextDetectionUseCase(private val textRecognizer: TextRecognizer) :
 
     override suspend fun call(param: InputImage): Result<List<DetectedTextObject>> =
         suspendCancellableCoroutine {
-            textRecognizer.process(param)
-                .addOnSuccessListener { vision ->
-                    val textObjects = vision.textBlocks.filter { it.boundingBox != null }
-                        .map {
+            textRecognizer.process(param).addOnSuccessListener { vision ->
+                    val textObjects = vision.textBlocks.filter { it.boundingBox != null }.map {
                             DetectedTextObject(it.boundingBox!!.toRectF())
                         }
                     it.resume(Result.success(textObjects))
-                }
-                .addOnFailureListener { e ->
+                }.addOnFailureListener { e ->
                     it.resumeWith(Result.failure(e))
                     Log.d("kruci", "error ${e.printStackTrace()}")
                 }

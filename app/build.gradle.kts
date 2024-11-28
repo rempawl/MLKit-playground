@@ -32,11 +32,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = JavaVersion.VERSION_17.toString()
     }
     buildFeatures {
         compose = true
@@ -53,6 +53,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":feature:image-processing"))
 
     implementation(libs.koin.core)
     implementation(libs.koin.androidx.compose)
@@ -71,8 +72,6 @@ dependencies {
 
     implementation(libs.firebase.core)
     implementation(libs.firebase.ml.model.interpreter)
-    implementation(libs.objects.detection.custom)
-    implementation(libs.play.services.mlkit.text.recognition)
     implementation(libs.material)
 
     testImplementation(libs.mockk)
@@ -86,10 +85,10 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
+    androidTestImplementation(libs.androidx.junit.ktx)
     androidTestImplementation (libs.leakcanary.android.instrumentation) // todo add leaks rule to ui tests
 
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-//    debugImplementation(libs.leakcanary.android)
-
+    debugImplementation(libs.leakcanary.android)
 }

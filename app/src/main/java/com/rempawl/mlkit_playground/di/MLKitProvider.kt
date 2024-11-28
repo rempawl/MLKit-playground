@@ -1,4 +1,4 @@
-package com.rempawl.mlkit_playground
+package com.rempawl.mlkit_playground.di
 
 import com.google.mlkit.common.model.LocalModel
 import com.google.mlkit.vision.objects.ObjectDetection

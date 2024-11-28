@@ -1,4 +1,4 @@
-package com.rempawl.mlkit_playground
+package com.rempawl.image.processing
 
 import android.graphics.Bitmap
 import android.graphics.Canvas

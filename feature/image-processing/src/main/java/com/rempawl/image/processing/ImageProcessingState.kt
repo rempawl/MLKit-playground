@@ -1,4 +1,4 @@
-package com.rempawl.mlkit_playground
+package com.rempawl.image.processing
 
 data class ImageProcessingState(
     val detectedObjects: List<DetectedObject> = emptyList(),

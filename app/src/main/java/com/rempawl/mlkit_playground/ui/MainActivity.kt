@@ -1,4 +1,4 @@
-package com.rempawl.mlkit_playground
+package com.rempawl.mlkit_playground.ui
 
 import android.graphics.Bitmap
 import android.net.Uri
@@ -14,6 +14,13 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.google.mlkit.vision.common.InputImage
+import com.rempawl.image.processing.CanvasProvider
+import com.rempawl.image.processing.DetectedObject
+import com.rempawl.image.processing.DetectedTextObject
+import com.rempawl.image.processing.ImageProcessingState
+import com.rempawl.image.processing.ImageProcessingViewModel
+import com.rempawl.image.processing.PaintProvider
+import com.rempawl.mlkit_playground.R
 import com.rempawl.mlkit_playground.databinding.ActivityMainBinding
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -108,10 +115,9 @@ class MainActivity : ComponentActivity() {
                     drawRect(it.rect, paintProvider.getObjectPaint())
                     // todo break text when overlaps rect
                     drawText(
-                        it.labels,
-                        it.startX,
-                        it.startY,
-                        paintProvider.getTextPaint(resources)
+                        it.labels, it.startX, it.startY, paintProvider.getTextPaint(
+                            fontSize = resources.getDimension(R.dimen.font_size_object_detection)
+                        )
                     )
                 }
             }

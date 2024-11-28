@@ -4,6 +4,7 @@ faceDetection = "16.1.7"
 firebaseCore = "21.1.1"
 firebaseMlModelInterpreter = "22.0.4"
 imageLabeling = "17.0.9"
+junitKtx = "1.2.1"
 koinAndroid = "4.0.0"
 koinAndroidxCompose = "4.0.0"
 koinCore = "4.0.0"
@@ -21,17 +22,22 @@ composeBom = "2024.04.01"
 mockk = "1.13.13"
 mockkAgent = "1.13.13"
 mockkAndroid = "1.13.13"
-objectDetection = "17.0.2"
 objectDetectionCustom = "17.0.2"
 playServicesMlkitTextRecognition = "19.0.1"
-googlePlayServices = "4.3.2"
 constraintlayout = "2.2.0"
 cameraCore = "1.4.0"
 junitJupiter = "5.8.1"
 material = "1.12.0"
+appcompat = "1.7.0"
+lifecycleViewmodelAndroid = "2.8.5"
+rules = "1.6.1"
+runner = "1.6.2"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-junit-ktx = { module = "androidx.test.ext:junit-ktx", version.ref = "junitKtx" }
+androidx-rules = { module = "androidx.test:rules", version.ref = "rules" }
+androidx-runner = { module = "androidx.test:runner", version.ref = "runner" }
 face-detection = { module = "com.google.mlkit:face-detection", version.ref = "faceDetection" }
 firebase-core = { module = "com.google.firebase:firebase-core", version.ref = "firebaseCore" }
 firebase-ml-model-interpreter = { module = "com.google.firebase:firebase-ml-model-interpreter", version.ref = "firebaseMlModelInterpreter" }
@@ -64,9 +70,12 @@ androidx-constraintlayout = { group = "androidx.constraintlayout", name = "const
 androidx-camera-core = { group = "androidx.camera", name = "camera-core", version.ref = "cameraCore" }
 junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junitJupiter" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+androidx-lifecycle-viewmodel-android = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-android", version.ref = "lifecycleViewmodelAndroid" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+android-library = { id = "com.android.library", version.ref = "agp" }
 
 

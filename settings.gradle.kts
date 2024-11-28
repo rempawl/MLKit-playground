@@ -21,4 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "MlKit-playground"
 include(":app")
- 
+include(":feature:image-processing")

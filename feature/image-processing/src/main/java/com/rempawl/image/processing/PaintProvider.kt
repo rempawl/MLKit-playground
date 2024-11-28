@@ -1,6 +1,5 @@
-package com.rempawl.mlkit_playground
+package com.rempawl.image.processing
 
-import android.content.res.Resources
 import android.graphics.Color
 import android.graphics.Paint
 
@@ -20,9 +19,9 @@ class PaintProvider {
             color = Color.CYAN
         }
 
-    fun getTextPaint(resources: Resources): Paint = customize {
+    fun getTextPaint(fontSize: Float): Paint = customize {
         style = Paint.Style.FILL
         color = Color.CYAN
-        textSize = resources.getDimension(R.dimen.font_size_object_detection)
+        textSize = fontSize
     }
 }
