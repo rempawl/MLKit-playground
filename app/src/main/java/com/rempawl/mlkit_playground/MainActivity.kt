@@ -51,8 +51,10 @@ object PaintProvider {
 
 
 // todo compose ui tests
+// todo viewbinding ui tests
 class MainActivity : ComponentActivity() {
 
+    // todo show bottomsheet with camera or gallery picker
     private val mediaPicker =
         registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
             uri?.let { processImage(it) } ?: showError()
@@ -96,7 +98,6 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-
     }
 
     private fun ImageProcessingState.handleStateChange() {
@@ -116,6 +117,9 @@ class MainActivity : ComponentActivity() {
         imageUri: Uri
     ) = with(binding.imageText) {
         setImageURI(imageUri)
+        // todo check performance difference when not returning
+        if (detectedTextObjects.isEmpty()) return@with
+
         val (bitmap, canvas) = createBitmapAndCanvas()
 
         val paint = Paint().apply {
@@ -136,6 +140,7 @@ class MainActivity : ComponentActivity() {
         imageUri: Uri
     ) = with(binding.imageObjects) {
         setImageURI(imageUri)
+        if (detectedObjects.isEmpty()) return@with
 
         val (bitmap, canvas) = createBitmapAndCanvas()
 
@@ -154,10 +159,8 @@ class MainActivity : ComponentActivity() {
         }
 
         detectedObjects.forEach {
-            textPaint.measureText(it.labels)
-
             canvas.drawRect(it.rect, objectPaint)
-
+            // todo break text when overlaps rect
             canvas.drawText(
                 it.labels,
                 it.startX,
