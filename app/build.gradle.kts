@@ -1,0 +1,102 @@
+import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
+
+plugins {
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    id("org.jlleitschuh.gradle.ktlint") version "11.1.0"
+}
+
+android {
+    namespace = "com.rempawl.mlkit_playground"
+    compileSdk = 34
+    androidResources {
+        noCompress += "tflite"
+    }
+    defaultConfig {
+        applicationId = "com.rempawl.mlkit_playground"
+        minSdk = 27
+        targetSdk = 34
+        versionCode = 1
+        versionName = "1.0"
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        vectorDrawables {
+            useSupportLibrary = true
+        }
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_17.toString()
+    }
+    buildFeatures {
+        compose = true
+        viewBinding = true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.1"
+    }
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
+    }
+    ktlint {
+        android = true
+        ignoreFailures = true
+        disabledRules.addAll("no-wildcard-imports", "final-newline")
+        reporters {
+            reporter(ReporterType.HTML)
+            reporter(ReporterType.PLAIN)
+        }
+    }
+}
+
+dependencies {
+    implementation(project(":feature:image-processing"))
+
+    implementation(libs.koin.core)
+    implementation(libs.koin.androidx.compose)
+    implementation(libs.koin.android)
+
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.activity.compose)
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.ui)
+    implementation(libs.androidx.ui.graphics)
+    implementation(libs.androidx.ui.tooling.preview)
+    implementation(libs.androidx.material3)
+    implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.camera.core)
+
+    implementation(libs.firebase.core)
+    implementation(libs.firebase.ml.model.interpreter)
+    implementation(libs.material)
+
+    testImplementation(libs.koin.test.junit4)
+    testImplementation(libs.junit)
+
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.ui.test.junit4)
+    androidTestImplementation(libs.androidx.junit.ktx)
+    androidTestImplementation(libs.leakcanary.android.instrumentation) // todo add leaks rule to ui tests
+
+    debugImplementation(libs.androidx.ui.tooling)
+    debugImplementation(libs.androidx.ui.test.manifest)
+    debugImplementation(libs.leakcanary.android)
+}
