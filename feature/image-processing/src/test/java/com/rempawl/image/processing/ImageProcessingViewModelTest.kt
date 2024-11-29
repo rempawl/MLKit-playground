@@ -2,53 +2,33 @@ package com.rempawl.image.processing
 
 import android.graphics.RectF
 import app.cash.turbine.test
+import arrow.core.left
 import arrow.core.right
-import com.rempawl.image.processing.core.DispatchersProvider
 import com.rempawl.image.processing.usecase.ObjectDetectionUseCase
 import com.rempawl.image.processing.usecase.TextDetectionUseCase
 import io.mockk.coEvery
 import io.mockk.mockk
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
 class ImageProcessingViewModelTest : BaseCoroutineTest() {
 
-    private val objectDetectionUseCase = mockk<ObjectDetectionUseCase>() {
-        coEvery { call(any()) } coAnswers {
-            (0..2).map {
-                DetectedObject(
-                    TEST_RECT,
-                    "label $it"
-                )
-            }
-                .right()
-        }
+    private val objectDetectionUseCase = mockk<ObjectDetectionUseCase> {
+        coEvery { call(any()) } returns (0..2).map {
+            DetectedObject(
+                TEST_RECT, "label $it"
+            )
+        }.right()
     }
 
-    private val textDetectionUseCase = mockk<TextDetectionUseCase>() {
-        coEvery { call(any()) } coAnswers {
-            delay(DELAY)
-            listOf(DetectedTextObject(TEST_RECT)).right()
-        }
-    }
+    private val textDetectionUseCase = mockk<TextDetectionUseCase>()
 
-    private fun createSUT(delay: Long? = null, error: Throwable? = null): ImageProcessingViewModel {
-        // todo error test and delay
+    private fun createSUT(error: Throwable? = null): ImageProcessingViewModel {
+        textDetectionUseCase.mock(error)
         val viewModel = ImageProcessingViewModel(
             objectDetectionUseCase = objectDetectionUseCase,
             textDetectionUseCase = textDetectionUseCase,
-            dispatchersProvider = object : DispatchersProvider {
-                override val io: CoroutineDispatcher
-                    get() = testDispatcher
-                override val main: CoroutineDispatcher
-                    get() = testDispatcher
-                override val default: CoroutineDispatcher
-                    get() = testDispatcher
-            }
         )
         return viewModel
     }
@@ -66,55 +46,13 @@ class ImageProcessingViewModelTest : BaseCoroutineTest() {
         val viewModel = createSUT()
         viewModel.state.test {
             assertEquals(INITIAL_STATE, awaitItem())
+
             viewModel.processImage(mockk(), "uri")
 
-            assertEquals(
-                INITIAL_STATE.copy(isProgressVisible = true, imageUri = "uri"),
-                awaitItem()
-            )
-
+            assertEquals(INITIAL_STATE.copy(isProgressVisible = true), awaitItem())
             cancelAndIgnoreRemainingEvents()
         }
     }
-
-    @Test
-    fun `when object detection is finished but text detection still runs, then progress is visible and detected objects are set`() =
-        runTest {
-            val viewModel = createSUT()
-            viewModel.state.test {
-                assertEquals(INITIAL_STATE, awaitItem())
-
-                viewModel.processImage(mockk(), "uri")
-
-                assertEquals(
-                    INITIAL_STATE.copy(isProgressVisible = true, imageUri = "uri"),
-                    awaitItem()
-                )
-
-                assertEquals(
-                    INITIAL_STATE.copy(
-                        isProgressVisible = true,
-                        imageUri = "uri",
-                        detectedObjects = listOf(
-                            DetectedObject(
-                                TEST_RECT,
-                                "label 0"
-                            ),
-                            DetectedObject(
-                                TEST_RECT,
-                                "label 1"
-                            ),
-                            DetectedObject(
-                                TEST_RECT,
-                                "label 2"
-                            ),
-                        ),
-                        detectedTextObjects = emptyList()
-                    ),
-                    awaitItem()
-                )
-            }
-        }
 
     @Test
     fun `when image is processed then progress is hidden and detected objects and texts are set`() =
@@ -124,41 +62,54 @@ class ImageProcessingViewModelTest : BaseCoroutineTest() {
                 assertEquals(INITIAL_STATE, awaitItem())
 
                 viewModel.processImage(mockk(), "uri")
+                assertEquals(INITIAL_STATE.copy(isProgressVisible = true), awaitItem())
 
                 assertEquals(
-                    INITIAL_STATE.copy(isProgressVisible = true, imageUri = "uri"),
-                    awaitItem()
-                )
-
-                advanceTimeBy(DELAY + 1)
-                assertEquals(
-                    INITIAL_STATE.copy(
+                    ImageProcessingState(
                         isProgressVisible = false,
                         imageUri = "uri",
                         detectedObjects = listOf(
                             DetectedObject(
-                                TEST_RECT,
-                                "label 0"
+                                TEST_RECT, "label 0"
                             ),
                             DetectedObject(
-                                TEST_RECT,
-                                "label 1"
+                                TEST_RECT, "label 1"
                             ),
                             DetectedObject(
-                                TEST_RECT,
-                                "label 2"
+                                TEST_RECT, "label 2"
                             ),
                         ),
                         detectedTextObjects = listOf(DetectedTextObject(TEST_RECT))
                     ),
-                    expectMostRecentItem()
+                    awaitItem()
                 )
             }
         }
 
+    @Test
+    fun `when error occurs then progress is hidden and error is shown`() = runTest {
+        val viewModel = createSUT(Throwable("test"))
+        viewModel.state.test {
+            assertEquals(INITIAL_STATE, awaitItem())
+
+            viewModel.processImage(mockk(), "uri")
+            assertEquals(INITIAL_STATE.copy(isProgressVisible = true), awaitItem())
+
+            assertEquals(
+                INITIAL_STATE.copy(isProgressVisible = false, showError = true),
+                awaitItem()
+            )
+        }
+    }
+
+    private fun TextDetectionUseCase.mock(error: Throwable? = null) {
+        coEvery { call(any()) } answers {
+            error?.left() ?: listOf(DetectedTextObject(TEST_RECT)).right()
+        }
+    }
+
     companion object {
         val TEST_RECT = mockk<RectF>()
         val INITIAL_STATE = ImageProcessingState()
-        const val DELAY = 10L
     }
 }

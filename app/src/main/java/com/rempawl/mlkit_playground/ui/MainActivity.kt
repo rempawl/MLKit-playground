@@ -115,12 +115,14 @@ class MainActivity : ComponentActivity() {
                     drawRect(it.rect, paintProvider.getObjectPaint())
                     // todo break text when overlaps rect
                     drawText(
-                        it.labels, it.startX, it.startY, paintProvider.getTextPaint(
-                            fontSize = resources.getDimension(R.dimen.font_size_object_detection)
-                        )
+                        it.labels,
+                        it.startX,
+                        it.startY,
+                        paintProvider.getTextPaint(fontSize = resources.getDimension(R.dimen.font_size_object_detection))
                     )
                 }
             }
+            // todo animate image change
             setImageBitmap(bitmap)
         }
 
@@ -129,7 +131,6 @@ class MainActivity : ComponentActivity() {
         recycle()
         copy
     }
-
 
     private fun showError() {
         // todo show snackbar

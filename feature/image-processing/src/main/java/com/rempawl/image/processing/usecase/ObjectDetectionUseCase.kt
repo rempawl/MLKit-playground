@@ -33,6 +33,5 @@ class ObjectDetectionUseCase(private val objectDetector: ObjectDetector) :
                     continuation.resume(e.left())
                     Log.d("kruci", "error ${e.printStackTrace()}")
                 }
-
         }
 }
