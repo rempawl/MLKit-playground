@@ -55,7 +55,7 @@ class ImageProcessingViewModelTest : BaseCoroutineTest() {
     }
 
     @Test
-    fun `when image is processed then progress is hidden and detected objects and texts are set`() =
+    fun `when image is processed, then progress is hidden and detected objects and texts are set`() =
         runTest {
             val viewModel = createSUT()
             viewModel.state.test {

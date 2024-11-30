@@ -1,18 +1,16 @@
 package com.rempawl.mlkit_playground.ui
 
-import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
-import android.widget.ImageView
 import androidx.activity.ComponentActivity
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.graphics.drawable.toBitmap
 import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.google.android.material.snackbar.Snackbar
 import com.google.mlkit.vision.common.InputImage
 import com.rempawl.image.processing.CanvasProvider
 import com.rempawl.image.processing.DetectedObject
@@ -29,6 +27,7 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 
 // todo compose ui tests
 // todo viewbinding ui tests
+// todo compare performance between compose and viewbinding
 class MainActivity : ComponentActivity() {
 
     // todo show bottomsheet with camera or gallery picker
@@ -46,7 +45,6 @@ class MainActivity : ComponentActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         this.setContentView(binding.root)
 
-        // todo make in compose with painting on overlay
         setupBinding()
         setupObservers()
     }
@@ -60,10 +58,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun ImageView.setupImageView() {
-        adjustViewBounds = true
-        scaleType = ImageView.ScaleType.CENTER_INSIDE
-    }
 
     private fun setupObservers() {
         lifecycleScope.launch {
@@ -126,14 +120,8 @@ class MainActivity : ComponentActivity() {
             setImageBitmap(bitmap)
         }
 
-    private fun ImageView.copyBitmapFromDrawable() = drawable.toBitmap().run {
-        val copy = copy(Bitmap.Config.ARGB_8888, true)
-        recycle()
-        copy
-    }
-
     private fun showError() {
-        // todo show snackbar
+        Snackbar.make(binding.root.rootView, "An error occurred", Snackbar.LENGTH_SHORT).show()
     }
 
     private fun processImage(uri: Uri) {

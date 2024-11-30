@@ -94,7 +94,9 @@ dependencies {
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
     androidTestImplementation(libs.androidx.junit.ktx)
-    androidTestImplementation(libs.leakcanary.android.instrumentation) // todo add leaks rule to ui tests
+    androidTestImplementation(libs.leakcanary.android.instrumentation)
+    androidTestImplementation(libs.androidx.espresso.intents)
+    androidTestImplementation(libs.androidx.rules)
 
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
