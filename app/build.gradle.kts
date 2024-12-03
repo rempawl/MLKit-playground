@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     id("org.jlleitschuh.gradle.ktlint") version "11.1.0"
+    alias(libs.plugins.compose.compiler)
 }
 
 android {
@@ -62,6 +63,11 @@ android {
             reporter(ReporterType.PLAIN)
         }
     }
+}
+
+composeCompiler {
+    reportsDestination = layout.buildDirectory.dir("compose_compiler")
+//    stabilityConfigurationFile = rootProject.layout.projectDirectory.file("stability_config.conf") todo
 }
 
 dependencies {

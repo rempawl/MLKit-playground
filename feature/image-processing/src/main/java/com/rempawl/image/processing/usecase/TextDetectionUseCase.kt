@@ -18,6 +18,7 @@ class TextDetectionUseCase(private val textRecognizer: TextRecognizer) :
     override suspend fun call(param: InputImage): EitherResult<List<DetectedTextObject>> =
         suspendCancellableCoroutine {
             textRecognizer.process(param).addOnSuccessListener { vision ->
+                // todo test
                 val textObjects = vision.textBlocks.filter { it.boundingBox != null }.map {
                     DetectedTextObject(it.boundingBox!!.toRectF())
                 }
