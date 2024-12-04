@@ -24,8 +24,13 @@ class ImageProcessingViewModel(
     private val _state = MutableStateFlow(ImageProcessingState())
     val state: StateFlow<ImageProcessingState> get() = _state.asStateFlow()
 
-    fun processImage(inputImage: InputImage, imageUri: String) {
+    fun processImage(imageUri: String, inputImageProvider: () -> InputImage) {
+        if (imageUri.isBlank()) {
+            _state.update { it.copy(showError = true) }
+            return
+        }
         _state.update { it.copy(isProgressVisible = true) }
+        val inputImage = inputImageProvider()
         viewModelScope.launch {
             // todo lift logic to StateCase
             either {
@@ -37,10 +42,14 @@ class ImageProcessingViewModel(
                     _state.update {
                         it.copy(
                             isProgressVisible = false,
-                            imageUri = imageUri,
                             showError = false,
                             detectedTextObjects = texts,
-                            detectedObjects = objects
+                            detectedObjects = objects,
+                            imageState = ImageState(
+                                height = inputImage.height,
+                                width = inputImage.width,
+                                uri = imageUri
+                            )
                         )
                     }
                 }
@@ -48,7 +57,7 @@ class ImageProcessingViewModel(
                     _state.update {
                         it.copy(
                             isProgressVisible = false,
-                            imageUri = "",
+                            imageState = ImageState(),
                             showError = true,
                             detectedTextObjects = emptyList(),
                             detectedObjects = emptyList()

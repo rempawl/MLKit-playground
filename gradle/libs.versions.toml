@@ -1,6 +1,9 @@
 [versions]
 agp = "8.7.2"
 arrowStack = "1.2.0-RC"
+coil = "2.6.0"
+coilCompose = "2.6.0"
+composeCompiler = "1.5.1"
 espressoIntents = "3.6.1"
 faceDetection = "16.1.7"
 firebaseCore = "21.1.1"
@@ -38,6 +41,8 @@ lifecycleViewmodelAndroid = "2.8.5"
 rules = "1.6.1"
 runner = "1.6.2"
 turbine = "1.0.0"
+lifecycleRuntimeComposeAndroid = "2.8.7"
+material3Android = "1.3.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -48,6 +53,8 @@ androidx-runner = { module = "androidx.test:runner", version.ref = "runner" }
 arrow-core = { module = "io.arrow-kt:arrow-core" }
 arrow-fx-coroutines = { module = "io.arrow-kt:arrow-fx-coroutines" }
 arrow-stack = { module = "io.arrow-kt:arrow-stack", version.ref = "arrowStack" }
+coil = { module = "io.coil-kt:coil", version.ref = "coil" }
+coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
 face-detection = { module = "com.google.mlkit:face-detection", version.ref = "faceDetection" }
 firebase-core = { module = "com.google.firebase:firebase-core", version.ref = "firebaseCore" }
 firebase-ml-model-interpreter = { module = "com.google.firebase:firebase-ml-model-interpreter", version.ref = "firebaseMlModelInterpreter" }
@@ -86,6 +93,8 @@ material = { group = "com.google.android.material", name = "material", version.r
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 androidx-lifecycle-viewmodel-android = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-android", version.ref = "lifecycleViewmodelAndroid" }
 turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
+androidx-lifecycle-runtime-compose-android = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose-android", version.ref = "lifecycleRuntimeComposeAndroid" }
+androidx-material3-android = { group = "androidx.compose.material3", name = "material3-android", version.ref = "material3Android" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

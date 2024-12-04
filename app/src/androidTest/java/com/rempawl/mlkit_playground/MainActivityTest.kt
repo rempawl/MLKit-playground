@@ -55,7 +55,7 @@ class MainActivityTest {
         Intents.release()
     }
 
-    @Test
+/*  todo compose tests  @Test
     fun whenInitializedThenClickOnFab() {
         Espresso.onView(withId(R.id.fab_select_image)).check(matches(isDisplayed()))
             .check(matches(isClickable()))
@@ -95,6 +95,6 @@ class MainActivityTest {
             .perform(scrollTo())
             .check(matches(isDisplayed()))
         releaseIntent()
-    }
+    }*/
 }
 
