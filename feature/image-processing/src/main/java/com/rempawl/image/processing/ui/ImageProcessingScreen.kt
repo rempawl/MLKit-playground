@@ -1,9 +1,11 @@
 package com.rempawl.image.processing.ui
 
 import android.net.Uri
+import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -18,7 +20,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -42,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.google.mlkit.vision.common.InputImage
 import com.rempawl.image.processing.DetectedObject
 import com.rempawl.image.processing.DetectedTextObject
@@ -52,39 +54,31 @@ import com.rempawl.image.processing.R
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-@OptIn(ExperimentalMaterial3Api::class)
 fun ImageProcessingScreen(viewModel: ImageProcessingViewModel = koinViewModel()) {
     val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
-
-    val pickMedia =
-        rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+    ImagesScreen(
+        state = state,
+        processImage = { uri ->
             viewModel.processImage(
                 imageUri = uri?.toString().orEmpty(),
                 inputImageProvider = { InputImage.fromFilePath(context, uri ?: Uri.EMPTY) }
             )
         }
+    )
+}
+
+@Composable
+private fun ImagesScreen(
+    state: ImageProcessingState,
+    processImage: (Uri?) -> Unit, // todo mvi and actions
+) {
+    val pickMedia = rememberLauncherForActivityResult(
+        ActivityResultContracts.PickVisualMedia()
+    ) { uri -> processImage(uri) }
     Scaffold(
-        topBar = {
-            Surface(shadowElevation = dimensionResource(R.dimen.elevation_toolbar)) {
-                TopAppBar(
-                    title = { Text(stringResource(R.string.title_topbar)) },
-                )
-            }
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-                },
-                content = {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_add_photo),
-                        contentDescription = null
-                    )
-                }
-            )
-        },
+        topBar = { ToolbarContent() },
+        floatingActionButton = { FabContent(pickMedia) },
         snackbarHost = {
             // todo show snackbar
         },
@@ -99,6 +93,32 @@ fun ImageProcessingScreen(viewModel: ImageProcessingViewModel = koinViewModel())
 }
 
 @Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun ToolbarContent() {
+    Surface(shadowElevation = dimensionResource(R.dimen.elevation_toolbar)) {
+        TopAppBar(
+            title = { Text(stringResource(R.string.title_topbar)) },
+        )
+    }
+}
+
+@Composable
+private fun FabContent(pickMedia: ManagedActivityResultLauncher<PickVisualMediaRequest, Uri?>) {
+    FloatingActionButton(
+        onClick = {
+            pickMedia.launch(
+                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+            )
+        },
+        content = {
+            Icon(
+                painter = painterResource(R.drawable.ic_add_photo), contentDescription = null
+            )
+        }
+    )
+}
+
+@Composable
 private fun ImageProcessingScreen(
     state: ImageProcessingState,
     modifier: Modifier,
@@ -110,14 +130,14 @@ private fun ImageProcessingScreen(
     ) {
         with(state) {
             when {
+                isProgressVisible -> CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center)
+                )
+
                 imageState.uri.isNotEmpty() -> ImagesContent(
                     imageState = imageState,
                     detectedObjects = detectedObjects,
                     detectedTextObjects = detectedTextObjects,
-                )
-
-                isProgressVisible -> CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center)
                 )
             }
         }
@@ -132,18 +152,15 @@ private fun ImagesContent(
     modifier: Modifier = Modifier,
 ) {
     val textMeasurer = rememberTextMeasurer()
-    val rectStroke = remember { getRectStroke() }
+    val rectStroke = remember { Stroke(3.0f) }
     val rectColor = remember { Color.Cyan }
-
     LazyColumn(
-        modifier = modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier = modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally
     ) {
         item {
             TitleText(title = stringResource(R.string.title_objects_section))
         }
         item {
-            // todo animate
             ProcessedImage(imageState) { matrix ->
                 detectedObjects.forEach { detectedObject ->
                     val scaledRect = matrix.map(detectedObject.rect.toComposeRect())
@@ -157,15 +174,12 @@ private fun ImagesContent(
                         text = detectedObject.labels,
                         topLeft = scaledRect.topLeft,
                         style = TextStyle(
-                            fontSize = 10.sp,
-                            color = Color.White,
-                            background = Color.Cyan
+                            fontSize = 10.sp, color = Color.White, background = rectColor
                         ),
                         size = scaledRect.size
                     )
                 }
             }
-
         }
         item {
             TitleText(title = stringResource(R.string.title_texts_section))
@@ -174,7 +188,6 @@ private fun ImagesContent(
             ProcessedImage(imageState) { matrix ->
                 detectedTextObjects.forEach { detectedTextObject ->
                     val scaledRect = matrix.map(detectedTextObject.rect.toComposeRect())
-
                     drawOutline(
                         outline = Outline.Rectangle(scaledRect),
                         color = rectColor,
@@ -186,17 +199,16 @@ private fun ImagesContent(
     }
 }
 
-private fun getRectStroke() = Stroke(3.0f)
-
 @Composable
 private fun ProcessedImage(
     imageState: ImageState,
     drawBlock: ContentDrawScope.(Matrix) -> Unit,
 ) {
     AsyncImage(
-        model = imageState.uri,
+        model = ImageRequest.Builder(LocalContext.current).data(imageState.uri).build(),
         contentDescription = null,
         modifier = Modifier
+            .animateContentSize()
             .drawWithCache {
                 onDrawWithContent {
                     drawContent()

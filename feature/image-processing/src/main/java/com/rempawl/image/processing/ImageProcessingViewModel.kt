@@ -26,7 +26,7 @@ class ImageProcessingViewModel(
 
     fun processImage(imageUri: String, inputImageProvider: () -> InputImage) {
         if (imageUri.isBlank()) {
-            _state.update { it.copy(showError = true) }
+            _state.update { it.copy(showError = true) } // todo error handler
             return
         }
         _state.update { it.copy(isProgressVisible = true) }
