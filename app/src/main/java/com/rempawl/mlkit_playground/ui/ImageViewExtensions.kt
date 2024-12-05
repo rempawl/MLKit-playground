@@ -9,8 +9,3 @@ fun ImageView.setupImageView() {
     scaleType = ImageView.ScaleType.CENTER_INSIDE
 }
 
-fun ImageView.copyBitmapFromDrawable(): Bitmap = drawable.toBitmap().run {
-    val copy = copy(Bitmap.Config.ARGB_8888, true)
-    recycle()
-    copy
-}

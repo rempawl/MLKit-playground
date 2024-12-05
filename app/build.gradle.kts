@@ -15,7 +15,7 @@ android {
     }
     defaultConfig {
         applicationId = "com.rempawl.mlkit_playground"
-        minSdk = 27
+        minSdk = 29
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -106,5 +106,4 @@ dependencies {
 
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-    debugImplementation(libs.leakcanary.android)
 }

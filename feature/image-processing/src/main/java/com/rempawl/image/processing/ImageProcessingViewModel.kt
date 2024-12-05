@@ -25,7 +25,7 @@ class ImageProcessingViewModel(
     val state: StateFlow<ImageProcessingState> get() = _state.asStateFlow()
 
     fun processImage(inputImage: InputImage, imageUri: String) {
-        _state.update { it.copy(isProgressVisible = true) }
+        _state.update { ImageProcessingState(isProgressVisible = true) }
         viewModelScope.launch {
             // todo lift logic to StateCase
             either {
