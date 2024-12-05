@@ -4,9 +4,11 @@ import android.graphics.RectF
 import app.cash.turbine.test
 import arrow.core.left
 import arrow.core.right
+import com.google.mlkit.vision.common.InputImage
 import com.rempawl.image.processing.usecase.ObjectDetectionUseCase
 import com.rempawl.image.processing.usecase.TextDetectionUseCase
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
@@ -20,6 +22,15 @@ class ImageProcessingViewModelTest : BaseCoroutineTest() {
                 TEST_RECT, "label $it"
             )
         }.right()
+    }
+
+    private val inputImage = mockk<InputImage> {
+        every { height } returns TEST_HEIGHT
+        every { width } returns TEST_WIDTH
+    }
+
+    private val inputImageProvider = mockk<() -> InputImage> {
+        every { this@mockk.invoke() } answers { inputImage }
     }
 
     private val textDetectionUseCase = mockk<TextDetectionUseCase>()
@@ -42,12 +53,42 @@ class ImageProcessingViewModelTest : BaseCoroutineTest() {
     }
 
     @Test
+    fun `when process image called, then text and object detection use cases called`() = runTest {
+        val viewModel = createSUT()
+        coVerifyNever {
+            objectDetectionUseCase.call(any())
+            textDetectionUseCase.call(any())
+        }
+
+        viewModel.processImage("uri", inputImageProvider)
+
+        coVerifyOnce {
+            objectDetectionUseCase.call(any())
+            textDetectionUseCase.call(any())
+        }
+    }
+
+    @Test
+    fun `when empty uri passed to process image, then no use cases called`() = runTest {
+        val viewModel = createSUT()
+
+        viewModel.processImage("", inputImageProvider)
+
+        coVerifyNever {
+            objectDetectionUseCase.call(any())
+            textDetectionUseCase.call(any())
+        }
+    }
+
+
+    @Test
     fun `when image selected then progress is shown and uri is set`() = runTest {
         val viewModel = createSUT()
+
         viewModel.state.test {
             assertEquals(INITIAL_STATE, awaitItem())
 
-            viewModel.processImage(mockk(), "uri")
+            viewModel.processImage("uri", inputImageProvider)
 
             assertEquals(INITIAL_STATE.copy(isProgressVisible = true), awaitItem())
             cancelAndIgnoreRemainingEvents()
@@ -61,13 +102,17 @@ class ImageProcessingViewModelTest : BaseCoroutineTest() {
             viewModel.state.test {
                 assertEquals(INITIAL_STATE, awaitItem())
 
-                viewModel.processImage(mockk(), "uri")
-                assertEquals(INITIAL_STATE.copy(isProgressVisible = true), awaitItem())
+                viewModel.processImage("uri", inputImageProvider)
 
+                assertEquals(INITIAL_STATE.copy(isProgressVisible = true), awaitItem())
                 assertEquals(
                     ImageProcessingState(
                         isProgressVisible = false,
-                        imageUri = "uri",
+                        imageState = ImageState(
+                            uri = "uri",
+                            height = TEST_HEIGHT,
+                            width = TEST_WIDTH
+                        ),
                         detectedObjects = listOf(
                             DetectedObject(
                                 TEST_RECT, "label 0"
@@ -92,8 +137,23 @@ class ImageProcessingViewModelTest : BaseCoroutineTest() {
         viewModel.state.test {
             assertEquals(INITIAL_STATE, awaitItem())
 
-            viewModel.processImage(mockk(), "uri")
+            viewModel.processImage("uri", inputImageProvider)
+
             assertEquals(INITIAL_STATE.copy(isProgressVisible = true), awaitItem())
+            assertEquals(
+                INITIAL_STATE.copy(isProgressVisible = false, showError = true),
+                awaitItem()
+            )
+        }
+    }
+
+    @Test
+    fun `when empty uri is passed, then error is shown`() = runTest {
+        val viewModel = createSUT(Throwable("test"))
+        viewModel.state.test {
+            assertEquals(INITIAL_STATE, awaitItem())
+
+            viewModel.processImage("", inputImageProvider)
 
             assertEquals(
                 INITIAL_STATE.copy(isProgressVisible = false, showError = true),
@@ -111,5 +171,7 @@ class ImageProcessingViewModelTest : BaseCoroutineTest() {
     companion object {
         val TEST_RECT = mockk<RectF>()
         val INITIAL_STATE = ImageProcessingState()
+        const val TEST_HEIGHT = 3840
+        const val TEST_WIDTH = 2160
     }
 }

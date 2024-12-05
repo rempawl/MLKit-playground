@@ -9,14 +9,14 @@ plugins {
 
 android {
     namespace = "com.rempawl.mlkit_playground"
-    compileSdk = 34
+    compileSdk = 35
     androidResources {
         noCompress += "tflite"
     }
     defaultConfig {
         applicationId = "com.rempawl.mlkit_playground"
         minSdk = 27
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -44,10 +44,9 @@ android {
     }
     buildFeatures {
         compose = true
-        viewBinding = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.1"
+        kotlinCompilerExtensionVersion = libs.versions.composeCompiler.get()
     }
     packaging {
         resources {
@@ -79,8 +78,11 @@ dependencies {
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.activity.compose)
+
     implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.lifecycle.runtime.compose.android)
+
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
