@@ -21,7 +21,7 @@ android {
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_17.toString()
     }
-    buildFeatures { // Enables Jetpack Compose for this module
+    buildFeatures {
         compose = true
     }
     composeOptions {
@@ -37,12 +37,13 @@ android {
         }
     }
 }
+
 composeCompiler {
     reportsDestination = layout.buildDirectory.dir("compose_compiler")
 //    stabilityConfigurationFile = rootProject.layout.projectDirectory.file("stability_config.conf") todo
 }
-dependencies {
 
+dependencies {
     // todo gradle plugin for dependencies
     implementation(libs.koin.core)
     implementation(libs.koin.androidx.compose)

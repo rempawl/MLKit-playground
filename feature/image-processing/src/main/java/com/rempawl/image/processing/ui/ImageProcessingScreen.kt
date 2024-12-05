@@ -94,7 +94,6 @@ fun ImageProcessingScreen(viewModel: ImageProcessingViewModel = koinViewModel())
         ImageProcessingScreen(
             state, modifier = Modifier.padding(it)
         )
-
     }
 }
 
@@ -123,7 +122,6 @@ private fun ImageProcessingScreen(
         }
     }
 }
-
 
 @Composable
 private fun ImagesContent(

@@ -53,6 +53,35 @@ class ImageProcessingViewModelTest : BaseCoroutineTest() {
     }
 
     @Test
+    fun `when process image called, then text and object detection use cases called`() = runTest {
+        val viewModel = createSUT()
+        coVerifyNever {
+            objectDetectionUseCase.call(any())
+            textDetectionUseCase.call(any())
+        }
+
+        viewModel.processImage("uri", inputImageProvider)
+
+        coVerifyOnce {
+            objectDetectionUseCase.call(any())
+            textDetectionUseCase.call(any())
+        }
+    }
+
+    @Test
+    fun `when empty uri passed to process image, then no use cases called`() = runTest {
+        val viewModel = createSUT()
+
+        viewModel.processImage("", inputImageProvider)
+
+        coVerifyNever {
+            objectDetectionUseCase.call(any())
+            textDetectionUseCase.call(any())
+        }
+    }
+
+
+    @Test
     fun `when image selected then progress is shown and uri is set`() = runTest {
         val viewModel = createSUT()
 

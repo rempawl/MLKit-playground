@@ -17,4 +17,3 @@ data class ImageState(
     val width: Int = 0,
     val uri: String = "",
 )
-
