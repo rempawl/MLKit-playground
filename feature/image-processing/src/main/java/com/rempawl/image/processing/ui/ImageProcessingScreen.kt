@@ -151,9 +151,11 @@ private fun ImagesContent(
     detectedTextObjects: List<DetectedTextObject>,
     modifier: Modifier = Modifier,
 ) {
+    val context = LocalContext.current
     val textMeasurer = rememberTextMeasurer()
     val rectStroke = remember { Stroke(3.0f) }
     val rectColor = remember { Color.Cyan }
+    val imageRequest = remember { ImageRequest.Builder(context).data(imageState.uri).build() }
     LazyColumn(
         modifier = modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -161,7 +163,7 @@ private fun ImagesContent(
             TitleText(title = stringResource(R.string.title_objects_section))
         }
         item {
-            ProcessedImage(imageState) { matrix ->
+            ProcessedImage(imageState, imageRequest) { matrix ->
                 detectedObjects.forEach { detectedObject ->
                     val scaledRect = matrix.map(detectedObject.rect.toComposeRect())
                     drawOutline(
@@ -185,7 +187,7 @@ private fun ImagesContent(
             TitleText(title = stringResource(R.string.title_texts_section))
         }
         item {
-            ProcessedImage(imageState) { matrix ->
+            ProcessedImage(imageState, imageRequest) { matrix ->
                 detectedTextObjects.forEach { detectedTextObject ->
                     val scaledRect = matrix.map(detectedTextObject.rect.toComposeRect())
                     drawOutline(
@@ -202,10 +204,11 @@ private fun ImagesContent(
 @Composable
 private fun ProcessedImage(
     imageState: ImageState,
+    imageRequest: ImageRequest,
     drawBlock: ContentDrawScope.(Matrix) -> Unit,
 ) {
     AsyncImage(
-        model = ImageRequest.Builder(LocalContext.current).data(imageState.uri).build(),
+        model = imageRequest,
         contentDescription = null,
         modifier = Modifier
             .animateContentSize()
