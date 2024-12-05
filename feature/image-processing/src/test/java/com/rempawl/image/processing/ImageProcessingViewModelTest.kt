@@ -103,8 +103,8 @@ class ImageProcessingViewModelTest : BaseCoroutineTest() {
                 assertEquals(INITIAL_STATE, awaitItem())
 
                 viewModel.processImage("uri", inputImageProvider)
-                assertEquals(INITIAL_STATE.copy(isProgressVisible = true), awaitItem())
 
+                assertEquals(INITIAL_STATE.copy(isProgressVisible = true), awaitItem())
                 assertEquals(
                     ImageProcessingState(
                         isProgressVisible = false,
@@ -138,8 +138,8 @@ class ImageProcessingViewModelTest : BaseCoroutineTest() {
             assertEquals(INITIAL_STATE, awaitItem())
 
             viewModel.processImage("uri", inputImageProvider)
-            assertEquals(INITIAL_STATE.copy(isProgressVisible = true), awaitItem())
 
+            assertEquals(INITIAL_STATE.copy(isProgressVisible = true), awaitItem())
             assertEquals(
                 INITIAL_STATE.copy(isProgressVisible = false, showError = true),
                 awaitItem()
@@ -152,6 +152,7 @@ class ImageProcessingViewModelTest : BaseCoroutineTest() {
         val viewModel = createSUT(Throwable("test"))
         viewModel.state.test {
             assertEquals(INITIAL_STATE, awaitItem())
+
             viewModel.processImage("", inputImageProvider)
 
             assertEquals(

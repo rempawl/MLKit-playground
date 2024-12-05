@@ -18,6 +18,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -67,7 +68,7 @@ fun ImageProcessingScreen(viewModel: ImageProcessingViewModel = koinViewModel())
         topBar = {
             Surface(shadowElevation = dimensionResource(R.dimen.elevation_toolbar)) {
                 TopAppBar(
-                    title = { Text(stringResource(R.string.title_topbar)) }
+                    title = { Text(stringResource(R.string.title_topbar)) },
                 )
             }
         },
@@ -132,6 +133,7 @@ private fun ImagesContent(
 ) {
     val textMeasurer = rememberTextMeasurer()
     val rectStroke = remember { getRectStroke() }
+    val rectColor = remember { Color.Cyan }
 
     LazyColumn(
         modifier = modifier.fillMaxSize(),
@@ -147,7 +149,7 @@ private fun ImagesContent(
                     val scaledRect = matrix.map(detectedObject.rect.toComposeRect())
                     drawOutline(
                         outline = Outline.Rectangle(scaledRect),
-                        color = Color.Cyan,
+                        color = rectColor,
                         style = rectStroke
                     )
                     drawText(
@@ -175,7 +177,7 @@ private fun ImagesContent(
 
                     drawOutline(
                         outline = Outline.Rectangle(scaledRect),
-                        color = Color.Red,
+                        color = rectColor,
                         style = rectStroke
                     )
                 }

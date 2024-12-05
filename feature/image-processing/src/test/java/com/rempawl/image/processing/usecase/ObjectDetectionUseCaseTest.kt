@@ -41,6 +41,7 @@ class ObjectDetectionUseCaseTest : BaseCoroutineTest() {
     @Test
     fun `when detected object has many labels, then correct labels text`() = runTest {
         val sut = createSUT(listOf(TEST_OBJECT_MANY_LABELS))
+
         val res = sut.call(mockk())
 
         assertTrue(res.isRight())
@@ -53,6 +54,7 @@ class ObjectDetectionUseCaseTest : BaseCoroutineTest() {
     @Test
     fun `when detected object has no labels, then correct labels text`() = runTest {
         val sut = createSUT(listOf(TEST_OBJECT_NO_LABELS))
+
         val res = sut.call(mockk())
 
         assertTrue(res.isRight())
@@ -65,6 +67,7 @@ class ObjectDetectionUseCaseTest : BaseCoroutineTest() {
     @Test
     fun `when detected object has one label, then correct labels text`() = runTest {
         val sut = createSUT(listOf(TEST_OBJECT_ONE_LABEL))
+
         val res = sut.call(mockk())
 
         assertTrue(res.isRight())
@@ -78,6 +81,7 @@ class ObjectDetectionUseCaseTest : BaseCoroutineTest() {
     @Test
     fun `when error, then return error`() = runTest {
         val sut = createSUT(emptyList(), TEST_THROWABLE)
+
         val res = sut.call(mockk())
 
         assertTrue(res.isLeft())

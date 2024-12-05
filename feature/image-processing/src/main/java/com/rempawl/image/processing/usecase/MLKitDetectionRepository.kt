@@ -18,19 +18,18 @@ class MLKitDetectionRepository(
 
     suspend fun detectObjects(inputImage: InputImage): EitherResult<List<DetectedObject>> =
         suspendCancellableCoroutine { continuation ->
-            objectDetector.process(inputImage).addOnSuccessListener { objects ->
-                continuation.resume(objects.right())
-            }.addOnFailureListener { e ->
-                continuation.resume(e.left())
-            }
+            objectDetector.process(inputImage)
+                .addOnSuccessListener { objects -> continuation.resume(objects.right()) }
+                .addOnFailureListener { e -> continuation.resume(e.left()) }
         }
 
     suspend fun detectText(inputImage: InputImage): EitherResult<List<TextBlockWrapper>> =
         suspendCancellableCoroutine {
-            textRecognizer.process(inputImage).addOnSuccessListener { vision ->
-                it.resume(vision.textBlocks.map { TextBlockWrapper.from(it) }.right())
-            }.addOnFailureListener { e ->
-                it.resume(e.left())
-            }
+            textRecognizer.process(inputImage)
+                .addOnSuccessListener { vision ->
+                    it.resume(vision.textBlocks.map { TextBlockWrapper.from(it) }.right())
+                }.addOnFailureListener { e ->
+                    it.resume(e.left())
+                }
         }
 }

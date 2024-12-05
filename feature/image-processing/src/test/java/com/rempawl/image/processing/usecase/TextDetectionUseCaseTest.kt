@@ -41,6 +41,7 @@ class TextDetectionUseCaseTest : BaseCoroutineTest() {
     fun `when no texts detected, then return empty list`() = runTest {
         repository.mock(emptyList())
         createSUT().run {
+
             val res = this.call(mockk())
 
             assertTrue(res.isRight())
@@ -90,6 +91,7 @@ class TextDetectionUseCaseTest : BaseCoroutineTest() {
     fun `when error, then return left of error`() = runTest {
         repository.mock(error = TEST_THROWABLE)
         val sut = createSUT()
+
         val res = sut.call(mockk())
 
         assertTrue(res.isLeft())
