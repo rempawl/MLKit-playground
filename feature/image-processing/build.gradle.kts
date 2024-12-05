@@ -71,6 +71,7 @@ dependencies {
     api(libs.objects.detection.custom)
     api(libs.play.services.mlkit.text.recognition)
     implementation(libs.androidx.material3.android)
+    implementation(libs.androidx.runtime.tracing)
 
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.mockk)
