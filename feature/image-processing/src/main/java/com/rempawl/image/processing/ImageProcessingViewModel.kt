@@ -29,7 +29,7 @@ class ImageProcessingViewModel(
             _state.update { it.copy(showError = true) } // todo error handler
             return
         }
-        _state.update { it.copy(isProgressVisible = true) }
+        _state.update { ImageProcessingState(isProgressVisible = true) }
         val inputImage = inputImageProvider()
         viewModelScope.launch {
             // todo lift logic to StateCase

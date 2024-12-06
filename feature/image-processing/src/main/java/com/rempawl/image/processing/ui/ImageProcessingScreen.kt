@@ -5,7 +5,11 @@ import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -129,12 +133,17 @@ private fun ImageProcessingScreen(
             .fillMaxSize()
     ) {
         with(state) {
-            when {
-                isProgressVisible -> CircularProgressIndicator(
+            if (isProgressVisible) {
+                CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center)
                 )
-
-                imageState.uri.isNotEmpty() -> ImagesContent(
+            }
+            AnimatedVisibility(
+                imageState.uri.isNotEmpty(),
+                enter = slideInVertically() + fadeIn(), // todo take from compositionLocal
+                exit = slideOutVertically()
+            ) {
+                ImagesContent(
                     imageState = imageState,
                     detectedObjects = detectedObjects,
                     detectedTextObjects = detectedTextObjects,
@@ -143,6 +152,7 @@ private fun ImageProcessingScreen(
         }
     }
 }
+
 
 @Composable
 private fun ImagesContent(
@@ -155,7 +165,9 @@ private fun ImagesContent(
     val textMeasurer = rememberTextMeasurer()
     val rectStroke = remember { Stroke(3.0f) }
     val rectColor = remember { Color.Cyan }
-    val imageRequest = remember { ImageRequest.Builder(context).data(imageState.uri).build() }
+    val imageRequest = remember(imageState.uri) {
+        ImageRequest.Builder(context).data(imageState.uri).build()
+    }
     LazyColumn(
         modifier = modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally
     ) {
