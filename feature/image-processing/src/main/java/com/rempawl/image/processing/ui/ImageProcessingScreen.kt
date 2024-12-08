@@ -1,10 +1,8 @@
 package com.rempawl.image.processing.ui
 
-import android.net.Uri
-import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.PickVisualMediaRequest
-import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
+import androidx.activity.result.contract.ActivityResultContracts.TakePicture
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.fadeIn
@@ -25,6 +23,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -43,56 +42,67 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.google.mlkit.vision.common.InputImage
 import com.rempawl.image.processing.DetectedObject
 import com.rempawl.image.processing.DetectedTextObject
+import com.rempawl.image.processing.ImageProcessingAction
+import com.rempawl.image.processing.ImageProcessingEffect
 import com.rempawl.image.processing.ImageProcessingState
 import com.rempawl.image.processing.ImageProcessingViewModel
 import com.rempawl.image.processing.ImageState
 import com.rempawl.image.processing.R
+import com.rempawl.image.processing.core.toPickVisualMediaRequest
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.collectLatest
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun ImageProcessingScreen(viewModel: ImageProcessingViewModel = koinViewModel()) {
-    val context = LocalContext.current
+fun ImageProcessingScreen(
+    viewModel: ImageProcessingViewModel = koinViewModel(),
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    EffectsObserver(
+        effectsProvider = { viewModel.effects },
+        submitAction = { viewModel.submitAction(it) }
+    )
     ImagesScreen(
         state = state,
-        processImage = { uri ->
-            viewModel.processImage(
-                imageUri = uri?.toString().orEmpty(),
-                inputImageProvider = { InputImage.fromFilePath(context, uri ?: Uri.EMPTY) }
-            )
-        }
+        submitAction = { viewModel.submitAction(it) },
     )
 }
 
 @Composable
 private fun ImagesScreen(
     state: ImageProcessingState,
-    processImage: (Uri?) -> Unit, // todo mvi and actions
+    submitAction: (ImageProcessingAction) -> Unit,
 ) {
-    val pickMedia = rememberLauncherForActivityResult(
-        ActivityResultContracts.PickVisualMedia()
-    ) { uri -> processImage(uri) }
     Scaffold(
         topBar = { ToolbarContent() },
-        floatingActionButton = { FabContent(pickMedia) },
+        floatingActionButton = {
+            FabContent {
+                submitAction(ImageProcessingAction.SelectImageFabClicked)
+            }
+        },
         snackbarHost = {
             // todo show snackbar
         },
+
         modifier = Modifier
             .systemBarsPadding()
             .fillMaxSize(),
-    ) {
+    ) { paddingValues ->
         ImageProcessingScreen(
-            state, modifier = Modifier.padding(it)
+            state, modifier = Modifier.padding(paddingValues)
         )
+        if (state.isSourcePickerVisible) {
+            ImageSourcePickerBottomSheet(submitAction, state)
+        }
     }
 }
 
@@ -107,19 +117,12 @@ private fun ToolbarContent() {
 }
 
 @Composable
-private fun FabContent(pickMedia: ManagedActivityResultLauncher<PickVisualMediaRequest, Uri?>) {
-    FloatingActionButton(
-        onClick = {
-            pickMedia.launch(
-                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-            )
-        },
-        content = {
-            Icon(
-                painter = painterResource(R.drawable.ic_add_photo), contentDescription = null
-            )
-        }
-    )
+private fun FabContent(pickMedia: () -> Unit) {
+    FloatingActionButton(onClick = { pickMedia() }, content = {
+        Icon(
+            painter = painterResource(R.drawable.ic_add_photo), contentDescription = null
+        )
+    })
 }
 
 @Composable
@@ -153,7 +156,6 @@ private fun ImageProcessingScreen(
     }
 }
 
-
 @Composable
 private fun ImagesContent(
     imageState: ImageState,
@@ -164,7 +166,8 @@ private fun ImagesContent(
     val context = LocalContext.current
     val textMeasurer = rememberTextMeasurer()
     val rectStroke = remember { Stroke(3.0f) }
-    val rectColor = remember { Color.Cyan }
+    val rectColor = remember { Color.Cyan } // todo add to theme
+    val textColor = remember { Color.Black } // todo add to theme
     val imageRequest = remember(imageState.uri) {
         ImageRequest.Builder(context).data(imageState.uri).build()
     }
@@ -188,7 +191,7 @@ private fun ImagesContent(
                         text = detectedObject.labels,
                         topLeft = scaledRect.topLeft,
                         style = TextStyle(
-                            fontSize = 10.sp, color = Color.White, background = rectColor
+                            fontSize = 10.sp, color = textColor, background = rectColor
                         ),
                         size = scaledRect.size
                     )
@@ -238,6 +241,33 @@ private fun TitleText(title: String) {
     Text(
         text = title,
         modifier = Modifier.padding(12.dp),
-        style = MaterialTheme.typography.headlineSmall
+        style = MaterialTheme.typography.headlineSmall,
+        textAlign = TextAlign.Center
     )
+}
+
+@Composable
+private fun EffectsObserver(
+    effectsProvider: () -> SharedFlow<ImageProcessingEffect>,
+    submitAction: (ImageProcessingAction) -> Unit,
+) {
+    val pickMedia = rememberLauncherForActivityResult(PickVisualMedia()) { uri ->
+        submitAction(
+            ImageProcessingAction.GalleryImagePicked(imageUri = uri?.toString().orEmpty())
+        )
+    }
+    val cameraLauncher = rememberLauncherForActivityResult(TakePicture()) {
+        submitAction(ImageProcessingAction.PictureTaken(isImageSaved = it))
+    }
+    LaunchedEffect(Unit) {
+        effectsProvider().collectLatest {
+            when (it) {
+                is ImageProcessingEffect.TakePicture -> cameraLauncher.launch(it.uri.toUri())
+
+                is ImageProcessingEffect.OpenGallery -> pickMedia.launch(
+                    it.pickerOption.toPickVisualMediaRequest()
+                )
+            }
+        }
+    }
 }

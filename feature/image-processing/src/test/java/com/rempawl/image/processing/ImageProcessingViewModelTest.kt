@@ -14,6 +14,8 @@ import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
+
+// todo add tests
 class ImageProcessingViewModelTest : BaseCoroutineTest() {
 
     private val objectDetectionUseCase = mockk<ObjectDetectionUseCase> {
@@ -40,6 +42,9 @@ class ImageProcessingViewModelTest : BaseCoroutineTest() {
         val viewModel = ImageProcessingViewModel(
             objectDetectionUseCase = objectDetectionUseCase,
             textDetectionUseCase = textDetectionUseCase,
+            fileUtils = mockk() {
+                coEvery { getInputImage(any<String>()) } returns inputImage.right()
+            } // todo left
         )
         return viewModel
     }
@@ -60,7 +65,7 @@ class ImageProcessingViewModelTest : BaseCoroutineTest() {
             textDetectionUseCase.call(any())
         }
 
-        viewModel.processImage("uri", inputImageProvider)
+        viewModel.submitAction(ImageProcessingAction.GalleryImagePicked("uri"))
 
         coVerifyOnce {
             objectDetectionUseCase.call(any())
@@ -72,7 +77,7 @@ class ImageProcessingViewModelTest : BaseCoroutineTest() {
     fun `when empty uri passed to process image, then no use cases called`() = runTest {
         val viewModel = createSUT()
 
-        viewModel.processImage("", inputImageProvider)
+        viewModel.submitAction(ImageProcessingAction.GalleryImagePicked("uri"))
 
         coVerifyNever {
             objectDetectionUseCase.call(any())
@@ -88,7 +93,11 @@ class ImageProcessingViewModelTest : BaseCoroutineTest() {
         viewModel.state.test {
             assertEquals(INITIAL_STATE, awaitItem())
 
-            viewModel.processImage("uri", inputImageProvider)
+            viewModel.submitAction(
+                ImageProcessingAction.GalleryImagePicked(
+                    "uri",
+                )
+            )
 
             assertEquals(INITIAL_STATE.copy(isProgressVisible = true), awaitItem())
             cancelAndIgnoreRemainingEvents()
@@ -102,7 +111,11 @@ class ImageProcessingViewModelTest : BaseCoroutineTest() {
             viewModel.state.test {
                 assertEquals(INITIAL_STATE, awaitItem())
 
-                viewModel.processImage("uri", inputImageProvider)
+                viewModel.submitAction(
+                    ImageProcessingAction.GalleryImagePicked(
+                        "uri",
+                    )
+                )
 
                 assertEquals(INITIAL_STATE.copy(isProgressVisible = true), awaitItem())
                 assertEquals(
@@ -137,7 +150,11 @@ class ImageProcessingViewModelTest : BaseCoroutineTest() {
         viewModel.state.test {
             assertEquals(INITIAL_STATE, awaitItem())
 
-            viewModel.processImage("uri", inputImageProvider)
+            viewModel.submitAction(
+                ImageProcessingAction.GalleryImagePicked(
+                    "uri",
+                )
+            )
 
             assertEquals(INITIAL_STATE.copy(isProgressVisible = true), awaitItem())
             assertEquals(
@@ -148,12 +165,17 @@ class ImageProcessingViewModelTest : BaseCoroutineTest() {
     }
 
     @Test
-    fun `when empty uri is passed, then error is shown`() = runTest {
+    fun `when retrieving input image fails, then error is shown`() = runTest {
         val viewModel = createSUT(Throwable("test"))
+        // todo mock fileUtils.getInputImage error
         viewModel.state.test {
             assertEquals(INITIAL_STATE, awaitItem())
 
-            viewModel.processImage("", inputImageProvider)
+            viewModel.submitAction(
+                ImageProcessingAction.GalleryImagePicked(
+                    "uri",
+                )
+            )
 
             assertEquals(
                 INITIAL_STATE.copy(isProgressVisible = false, showError = true),
