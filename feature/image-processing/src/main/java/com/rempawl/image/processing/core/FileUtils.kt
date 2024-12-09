@@ -2,6 +2,7 @@ package com.rempawl.image.processing.core
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import arrow.core.Either
@@ -14,21 +15,29 @@ class FileUtils(
     private val context: Context,
 ) {
     // todo core-android module
+    // todo interface
 
-    suspend fun getTmpCameraFileUri(): Uri = withContext(dispatchersProvider.io) {
-        val cacheDir = File(context.cacheDir, IMAGES_CACHE_DIR)
-        if (!cacheDir.exists())
-            cacheDir.mkdir()
-        val tmpFile = File.createTempFile("tmp_image_file", ".png", cacheDir)
-            .apply { createNewFile() }
-
-        FileProvider.getUriForFile(context, context.packageName + ".provider", tmpFile)
-    }
+    suspend fun getTmpCameraFileUriString(): EitherResult<String> =
+        getTmpCameraFileUri().map { it.toString() }
 
     suspend fun getInputImage(uri: String): EitherResult<InputImage> = getInputImage(uri.toUri())
 
-    suspend fun getInputImage(uri: Uri): EitherResult<InputImage> =
+    private suspend fun getTmpCameraFileUri(): EitherResult<Uri> =
         withContext(dispatchersProvider.io) {
+            Either.catch {
+                val cacheDir = File(context.cacheDir, IMAGES_CACHE_DIR)
+                if (!cacheDir.exists())
+                    cacheDir.mkdir()
+                val tmpFile = File.createTempFile("tmp_image_file", ".png", cacheDir)
+                    .apply { createNewFile() }
+
+                FileProvider.getUriForFile(context, context.packageName + ".provider", tmpFile)
+            }
+        }
+
+    private suspend fun getInputImage(uri: Uri): EitherResult<InputImage> =
+        withContext(dispatchersProvider.io) {
+            Log.d("kruci","get input image $uri")
             Either.catch {
                 InputImage.fromFilePath(context, uri)
             }
@@ -36,6 +45,7 @@ class FileUtils(
 
     companion object {
         const val IMAGES_CACHE_DIR = "images"
+
     }
 
 }

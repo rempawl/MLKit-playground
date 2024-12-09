@@ -7,8 +7,10 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import com.rempawl.image.processing.ui.ImageProcessingScreen
+import com.ramcosta.composedestinations.DestinationsNavHost
+import com.ramcosta.composedestinations.generated.navgraphs.RootNavGraph
 import com.rempawl.mlkit_playground.ui.theme.MlKitplaygroundTheme
+
 
 // todo compose ui tests
 class MainActivity : ComponentActivity() {
@@ -22,7 +24,7 @@ class MainActivity : ComponentActivity() {
         )
         setContent {
             MlKitplaygroundTheme {
-                ImageProcessingScreen()
+                DestinationsNavHost(RootNavGraph)
             }
         }
     }

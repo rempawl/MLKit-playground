@@ -17,13 +17,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.rempawl.image.processing.ImageProcessingAction
 import com.rempawl.image.processing.ImageProcessingState
 import com.rempawl.image.processing.R
-import com.rempawl.image.processing.core.FilePickerOption
+import com.rempawl.image.processing.core.ImageSourcePickerOption
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
@@ -38,16 +39,15 @@ fun ImageSourcePickerBottomSheet(
     ) {
         ImageSourcePickerBottomSheet(
             pickerOptions = state.sourcePickerOptions,
-            submitAction = { submitAction(ImageProcessingAction.FilePickerOptionSelected(it)) }
+            submitAction = { submitAction(ImageProcessingAction.ImageSourcePickerOptionSelected(it)) }
         )
     }
 }
 
-
 @Composable
 private fun ImageSourcePickerBottomSheet(
-    pickerOptions: List<FilePickerOption>,
-    submitAction: (FilePickerOption) -> Unit,
+    pickerOptions: List<ImageSourcePickerOption>,
+    submitAction: (ImageSourcePickerOption) -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -56,7 +56,7 @@ private fun ImageSourcePickerBottomSheet(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            "Select image source", // todo
+            stringResource(R.string.image_source_picker_title),
             style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
             textAlign = TextAlign.Center
         )
@@ -68,16 +68,17 @@ private fun ImageSourcePickerBottomSheet(
     }
 }
 
-private fun FilePickerOption.getText() = when (this) {
-    FilePickerOption.Camera -> "Camera" //todo string resource
-    FilePickerOption.Gallery -> "Gallery"
+@Composable
+private fun ImageSourcePickerOption.getText() = when (this) {
+    ImageSourcePickerOption.CAMERA -> stringResource(R.string.image_source_picker_camera_label)
+    ImageSourcePickerOption.GALLERY -> stringResource(R.string.image_source_picker_gallery_label)
 }
 
 @Composable
-private fun FilePickerOption.Content(submitAction: (FilePickerOption) -> Unit) {
+private fun ImageSourcePickerOption.Content(submitAction: (ImageSourcePickerOption) -> Unit) {
     Button(
         modifier = Modifier
-            .fillMaxWidth()
+            .fillMaxWidth() // todo landscape
             .height(48.dp),
         onClick = { submitAction(this) }
     ) {
@@ -89,11 +90,10 @@ private fun FilePickerOption.Content(submitAction: (FilePickerOption) -> Unit) {
         Spacer(Modifier.width(12.dp))
         Text(text = getText())
     }
-
 }
 
 @Composable
-private fun FilePickerOption.getIconPainter() = when (this) {
-    FilePickerOption.Camera -> painterResource(R.drawable.ic_camera)
-    FilePickerOption.Gallery -> painterResource(R.drawable.ic_gallery)
+private fun ImageSourcePickerOption.getIconPainter() = when (this) {
+    ImageSourcePickerOption.CAMERA -> painterResource(R.drawable.ic_camera)
+    ImageSourcePickerOption.GALLERY -> painterResource(R.drawable.ic_gallery)
 }

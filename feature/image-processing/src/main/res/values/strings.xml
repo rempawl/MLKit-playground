@@ -3,4 +3,8 @@
     <string name="title_topbar">Select image to run object detection</string>
     <string name="title_objects_section">Detected objects</string>
     <string name="title_texts_section">Detected texts</string>
+    <string name="error_generic">An error ocurred</string>
+    <string name="image_source_picker_title">Select image source</string>
+    <string name="image_source_picker_camera_label">Camera</string>
+    <string name="image_source_picker_gallery_label">Gallery</string>
 </resources>

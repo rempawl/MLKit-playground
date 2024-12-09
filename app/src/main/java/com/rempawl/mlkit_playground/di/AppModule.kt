@@ -14,7 +14,7 @@ import com.rempawl.mlkit_playground.di.MLKitProvider.provideTextRecognizer
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
-import org.koin.core.module.dsl.viewModelOf
+import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 val appModule = module {
@@ -25,5 +25,5 @@ val appModule = module {
     factoryOf(::ObjectDetectionUseCase)
     factoryOf(::TextDetectionUseCase)
     factoryOf(::MLKitDetectionRepository)
-    viewModelOf(::ImageProcessingViewModel)
+    viewModel() { args -> ImageProcessingViewModel(args.get(), get(), get(), get()) }
 }

@@ -1,5 +1,6 @@
 package com.rempawl.image.processing.ui
 
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
 import androidx.activity.result.contract.ActivityResultContracts.TakePicture
@@ -49,6 +50,8 @@ import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.RootGraph
 import com.rempawl.image.processing.DetectedObject
 import com.rempawl.image.processing.DetectedTextObject
 import com.rempawl.image.processing.ImageProcessingAction
@@ -60,11 +63,12 @@ import com.rempawl.image.processing.R
 import com.rempawl.image.processing.core.toPickVisualMediaRequest
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.collectLatest
-import org.koin.androidx.compose.koinViewModel
+import org.koin.androidx.compose.navigation.koinNavViewModel
 
+@Destination<RootGraph>(start = true) // sets this as the start destination of the "root" nav graph
 @Composable
 fun ImageProcessingScreen(
-    viewModel: ImageProcessingViewModel = koinViewModel(),
+    viewModel: ImageProcessingViewModel = koinNavViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     EffectsObserver(
@@ -97,9 +101,18 @@ private fun ImagesScreen(
             .systemBarsPadding()
             .fillMaxSize(),
     ) { paddingValues ->
+
         ImageProcessingScreen(
             state, modifier = Modifier.padding(paddingValues)
         )
+        if (state.showError) {
+            // todo snackbar & error clearing after specified time
+            Toast.makeText(
+                LocalContext.current,
+                stringResource(R.string.error_generic),
+                Toast.LENGTH_SHORT
+            ).show()
+        }
         if (state.isSourcePickerVisible) {
             ImageSourcePickerBottomSheet(submitAction, state)
         }

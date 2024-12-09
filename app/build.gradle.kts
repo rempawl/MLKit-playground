@@ -3,8 +3,11 @@ import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    id("org.jlleitschuh.gradle.ktlint") version "11.1.0"
     alias(libs.plugins.compose.compiler)
+    id("org.jlleitschuh.gradle.ktlint") version "11.1.0" // todo libs.plugins
+    kotlin("plugin.serialization") version "2.1.0" apply false
+    id("kotlin-parcelize")
+    id("com.google.devtools.ksp") version "2.0.0-1.0.21"
 }
 
 android {
@@ -25,14 +28,28 @@ android {
             useSupportLibrary = true
         }
     }
+    signingConfigs {
+        create("release") {
+            this.initWith(signingConfigs.getByName("debug"))
+        // todo
+        }
+    }
 
     buildTypes {
+        debug {
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-debug"
+            isDebuggable = true
+            signingConfig = signingConfigs.getByName("debug")
+        }
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("release")
+
         }
     }
     compileOptions {
@@ -71,6 +88,9 @@ composeCompiler {
 
 dependencies {
     implementation(project(":feature:image-processing"))
+    implementation(libs.compose.destinations.core)
+    ksp(libs.compose.destinations.ksp)
+    implementation(libs.compose.destinations.bottomsheet)
 
     implementation(libs.koin.core)
     implementation(libs.koin.androidx.compose)
@@ -94,6 +114,7 @@ dependencies {
     implementation(libs.firebase.core)
     implementation(libs.firebase.ml.model.interpreter)
     implementation(libs.material)
+    implementation(libs.kotlinx.serialization.json)
 
     testImplementation(libs.koin.test.junit4)
     testImplementation(libs.junit)
