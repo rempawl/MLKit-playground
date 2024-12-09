@@ -4,10 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import arrow.core.raise.either
 import com.google.mlkit.vision.common.InputImage
-import com.rempawl.image.processing.core.EitherResult
-import com.rempawl.image.processing.core.FilePickerOption
 import com.rempawl.image.processing.core.FileUtils
 import com.rempawl.image.processing.core.GalleryPickerOption
+import com.rempawl.image.processing.core.ImageSourcePickerOption
 import com.rempawl.image.processing.core.onError
 import com.rempawl.image.processing.core.onSuccess
 import com.rempawl.image.processing.usecase.ObjectDetectionUseCase
@@ -42,26 +41,26 @@ class ImageProcessingViewModel(
 
     fun submitAction(action: ImageProcessingAction) = viewModelScope.launch {
         when (action) {
-            is ImageProcessingAction.GalleryImagePicked -> processImage(
-                imageUri = action.imageUri,
-                inputImageResult = fileUtils.getInputImage(action.imageUri)
-            )
+            is ImageProcessingAction.GalleryImagePicked -> processImage(imageUri = action.imageUri)
 
             ImageProcessingAction.SelectImageFabClicked -> _state.update {
                 it.copy(
-                    sourcePickerOptions = listOf(FilePickerOption.Camera, FilePickerOption.Gallery)
+                    sourcePickerOptions = listOf(
+                        ImageSourcePickerOption.Camera,
+                        ImageSourcePickerOption.Gallery
+                    )
                 )
             }
 
-            is ImageProcessingAction.PictureTaken -> handlePictureResult(action)
+            is ImageProcessingAction.PictureTaken -> handlePictureTakenResult(action)
 
             ImageProcessingAction.HideImageSourcePicker -> hideImageSourcePicker()
 
-            is ImageProcessingAction.FilePickerOptionSelected -> {
+            is ImageProcessingAction.ImageSourcePickerOptionSelected -> {
                 hideImageSourcePicker()
                 when (action.option) {
-                    FilePickerOption.Camera -> openCamera()
-                    FilePickerOption.Gallery -> openGallery()
+                    ImageSourcePickerOption.Camera -> tryOpenCamera()
+                    ImageSourcePickerOption.Gallery -> openGallery()
                 }
             }
         }
@@ -73,46 +72,40 @@ class ImageProcessingViewModel(
         }
     }
 
-    private fun openCamera() {
-        viewModelScope.launch {
-            val uri = fileUtils.getTmpCameraFileUri()
-            _state.update { it.copy(cameraUri = uri.toString()) }
-            setEffect(ImageProcessingEffect.TakePicture(uri.toString()))
-        }
+    private suspend fun tryOpenCamera() {
+        fileUtils.getTmpCameraFileUriString()
+            .onSuccess { uri ->
+                _state.update { it.copy(cameraUri = uri) }
+                setEffect(ImageProcessingEffect.TakePicture(uri))
+            }
+            .onError {
+                _state.update { it.copy(showError = true) } // todo UriError
+            }
     }
 
-    private suspend fun handlePictureResult(action: ImageProcessingAction.PictureTaken) {
+    private suspend fun handlePictureTakenResult(action: ImageProcessingAction.PictureTaken) {
         if (action.isImageSaved) {
-            val uri = _state.value.cameraUri
-            processImage(
-                imageUri = uri,
-                inputImageResult = fileUtils.getInputImage(uri)
-            )
+            processImage(imageUri = _state.value.cameraUri)
         } else {
             _state.update { it.copy(showError = true) }
         }
     }
 
-    private suspend fun ImageProcessingViewModel.openGallery() {
-        _state.update { it.copy(sourcePickerOptions = emptyList()) }
+    private suspend fun openGallery() {
+        hideImageSourcePicker()
         setEffect(
-            ImageProcessingEffect.OpenGallery(
-                GalleryPickerOption.IMAGE_ONLY
-            )
+            ImageProcessingEffect.OpenGallery(GalleryPickerOption.IMAGE_ONLY)
         )
     }
 
     private suspend fun setEffect(effect: ImageProcessingEffect) {
-        _effects.emit(effect)
+        _effects.emit(effect) // todo base viewmodel
     }
 
     // todo some base progress watcher and withProgress extensions
-    private fun processImage(
-        imageUri: String,
-        inputImageResult: EitherResult<InputImage>,
-    ) = viewModelScope.launch {
+    private suspend fun processImage(imageUri: String) {
         _state.update { it.copy(isProgressVisible = true) }
-        inputImageResult
+        fileUtils.getInputImage(imageUri)
             .onSuccess { inputImage ->
                 // todo lift logic to StateCase
                 processInputImage(inputImage, imageUri)

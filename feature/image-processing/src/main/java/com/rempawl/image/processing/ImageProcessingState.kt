@@ -1,7 +1,7 @@
 package com.rempawl.image.processing
 
 import androidx.compose.runtime.Immutable
-import com.rempawl.image.processing.core.FilePickerOption
+import com.rempawl.image.processing.core.ImageSourcePickerOption
 
 @Immutable
 data class ImageProcessingState(
@@ -11,7 +11,7 @@ data class ImageProcessingState(
     val showError: Boolean = false,
     val isProgressVisible: Boolean = false,
     val imageState: ImageState = ImageState(),
-    val sourcePickerOptions: List<FilePickerOption> = emptyList(),
+    val sourcePickerOptions: List<ImageSourcePickerOption> = emptyList(),
 ) {
     val isSourcePickerVisible: Boolean get() = sourcePickerOptions.isNotEmpty()
 }

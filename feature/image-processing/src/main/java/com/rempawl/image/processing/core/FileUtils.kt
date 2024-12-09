@@ -15,19 +15,25 @@ class FileUtils(
 ) {
     // todo core-android module
 
-    suspend fun getTmpCameraFileUri(): Uri = withContext(dispatchersProvider.io) {
-        val cacheDir = File(context.cacheDir, IMAGES_CACHE_DIR)
-        if (!cacheDir.exists())
-            cacheDir.mkdir()
-        val tmpFile = File.createTempFile("tmp_image_file", ".png", cacheDir)
-            .apply { createNewFile() }
+    suspend fun getTmpCameraFileUriString(): EitherResult<String> =
+        getTmpCameraFileUri().map { it.toString() }
 
-        FileProvider.getUriForFile(context, context.packageName + ".provider", tmpFile)
+    suspend fun getTmpCameraFileUri(): EitherResult<Uri> = withContext(dispatchersProvider.io) {
+        Either.catch {
+            val cacheDir = File(context.cacheDir, IMAGES_CACHE_DIR)
+            if (!cacheDir.exists())
+                cacheDir.mkdir()
+            val tmpFile = File.createTempFile("tmp_image_file", ".png", cacheDir)
+                .apply { createNewFile() }
+
+            FileProvider.getUriForFile(context, context.packageName + ".provider", tmpFile)
+        }
     }
+
 
     suspend fun getInputImage(uri: String): EitherResult<InputImage> = getInputImage(uri.toUri())
 
-    suspend fun getInputImage(uri: Uri): EitherResult<InputImage> =
+    private suspend fun getInputImage(uri: Uri): EitherResult<InputImage> =
         withContext(dispatchersProvider.io) {
             Either.catch {
                 InputImage.fromFilePath(context, uri)
@@ -36,6 +42,7 @@ class FileUtils(
 
     companion object {
         const val IMAGES_CACHE_DIR = "images"
+
     }
 
 }
