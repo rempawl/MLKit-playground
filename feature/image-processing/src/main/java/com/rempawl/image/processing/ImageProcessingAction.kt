@@ -1,7 +1,7 @@
 package com.rempawl.image.processing
 
 import com.rempawl.image.processing.core.Action
-import com.rempawl.image.processing.core.FilePickerOption
+import com.rempawl.image.processing.core.ImageSourcePickerOption
 
 sealed interface ImageProcessingAction : Action {
     data object SelectImageFabClicked : ImageProcessingAction
@@ -15,5 +15,5 @@ sealed interface ImageProcessingAction : Action {
         val imageUri: String,
     ) : ImageProcessingAction
 
-    data class FilePickerOptionSelected(val option: FilePickerOption) : ImageProcessingAction
+    data class ImageSourcePickerOptionSelected(val option: ImageSourcePickerOption) : ImageProcessingAction
 }
