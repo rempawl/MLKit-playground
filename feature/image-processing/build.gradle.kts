@@ -7,6 +7,10 @@ plugins {
     id("de.mannodermaus.android-junit5") version "1.9.3.0"
     id("org.jlleitschuh.gradle.ktlint") version "11.1.0"
     alias(libs.plugins.compose.compiler)
+    kotlin("plugin.serialization") version "2.1.0"
+    id("kotlin-parcelize")
+    id("com.google.devtools.ksp") version "2.0.0-1.0.21"
+
 }
 
 android {
@@ -45,10 +49,16 @@ composeCompiler {
 
 dependencies {
     // todo gradle plugin for dependencies
-    implementation(libs.koin.core)
-    implementation(libs.koin.androidx.compose)
-    implementation(libs.koin.android)
+    implementation(libs.compose.destinations.core)
+    ksp(libs.compose.destinations.ksp)
+    implementation(libs.compose.destinations.bottomsheet)
 
+    implementation(libs.koin.core)
+    implementation(libs.koin.android)
+    implementation(libs.koin.androidx.compose)
+    implementation(libs.koin.androidx.compose.navigation)
+    
+    implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
