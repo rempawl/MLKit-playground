@@ -1,4 +1,4 @@
-package com.rempawl.mlkit_playground.di
+package com.rempawl.image.processing.di
 
 import com.google.mlkit.common.model.LocalModel
 import com.google.mlkit.vision.objects.ObjectDetection
@@ -14,7 +14,6 @@ object MLKitProvider {
             .setAssetFilePath("object_labeler.tflite")
             .build()
     }
-
 
     private val customObjectDetectorOptions by lazy {
         CustomObjectDetectorOptions.Builder(localModel)

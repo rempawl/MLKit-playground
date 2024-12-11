@@ -1,6 +1,5 @@
-package com.rempawl.mlkit_playground.core
+package com.rempawl.image.processing.core
 
-import com.rempawl.image.processing.core.DispatchersProvider
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 
