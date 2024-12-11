@@ -1,6 +1,5 @@
 package com.rempawl.image.processing
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import arrow.core.raise.either
@@ -10,7 +9,10 @@ import com.rempawl.image.processing.core.GalleryPickerOption
 import com.rempawl.image.processing.core.ImageSourcePickerOption
 import com.rempawl.image.processing.core.onError
 import com.rempawl.image.processing.core.onSuccess
+import com.rempawl.image.processing.usecase.GetSavedStateUseCase
+import com.rempawl.image.processing.usecase.GetSavedStateUseCase.SavedStateParam
 import com.rempawl.image.processing.usecase.ObjectDetectionUseCase
+import com.rempawl.image.processing.usecase.SaveStateUseCase
 import com.rempawl.image.processing.usecase.TextDetectionUseCase
 import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.BufferOverflow
@@ -24,22 +26,28 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class ImageProcessingViewModel(
-    private val savedStateHandle: SavedStateHandle,
     private val objectDetectionUseCase: ObjectDetectionUseCase,
     private val textDetectionUseCase: TextDetectionUseCase,
-    private val fileUtils: FileUtils,
+    private val fileUtils: FileUtils, // todo usecases
+    private val saveStateUseCase: SaveStateUseCase<ImageProcessingState>,
+    private val getSavedStateUseCase: GetSavedStateUseCase<ImageProcessingState>,
 ) : ViewModel() {
 
     // todo kotlin 2.x explicit backing field
-
     private val _state = MutableStateFlow(ImageProcessingState())
     val state: StateFlow<ImageProcessingState> get() = _state.asStateFlow()
 
     // todo BaseMviViewmodel for state & effects & submit action
     private val _effects = MutableSharedFlow<ImageProcessingEffect>(
-        extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST
+        extraBufferCapacity = 5, onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
     val effects = _effects.asSharedFlow()
+
+    init {
+        viewModelScope.launch {
+            retrieveSavedState()?.let { savedState -> _state.update { savedState } }
+        }
+    }
 
     fun submitAction(action: ImageProcessingAction) = viewModelScope.launch {
         when (action) {
@@ -64,14 +72,26 @@ class ImageProcessingViewModel(
                     ImageSourcePickerOption.GALLERY -> openGallery()
                 }
             }
+
+            ImageProcessingAction.LifecycleStopped -> {
+                saveStateUseCase.call(
+                    SaveStateUseCase.Param(
+                        state = state.value,
+                        keyProvider = KEY_SAVED_STATE_PROVIDER,
+                        keyState = KEY_STATE
+                    )
+                )
+            }
         }
     }
 
-    override fun onCleared() {
-        super.onCleared()
-        savedStateHandle[KEY_STATE] =
-            state.value  // todo use saveable api to fix when killing process on samsung S10
-    }
+    private suspend fun retrieveSavedState(): ImageProcessingState? = getSavedStateUseCase
+        .call(
+            SavedStateParam(
+                keyProvider = KEY_SAVED_STATE_PROVIDER,
+                keyState = KEY_STATE
+            )
+        )
 
     private fun hideImageSourcePicker() {
         _state.update {
@@ -80,6 +100,7 @@ class ImageProcessingViewModel(
     }
 
     private suspend fun tryOpenCamera() {
+        // todo getTmpCameraFileUsecase
         fileUtils.getTmpCameraFileUriString().onSuccess { uri ->
             _state.update { it.copy(cameraUri = uri) }
             setEffect(ImageProcessingEffect.TakePicture(uri))
@@ -90,7 +111,7 @@ class ImageProcessingViewModel(
 
     private suspend fun handlePictureTakenResult(action: ImageProcessingAction.PictureTaken) {
         val cameraUri = state.value.cameraUri.ifEmpty {
-            savedStateHandle.get<ImageProcessingState>(KEY_STATE)?.cameraUri.orEmpty() // todo
+            retrieveSavedState()?.cameraUri.orEmpty()
         }
 
         if (action.isImageSaved && cameraUri.isNotEmpty()) {
@@ -113,6 +134,8 @@ class ImageProcessingViewModel(
     // todo some base progress watcher and withProgress extensions
     private suspend fun processImage(imageUri: String) {
         _state.update { it.copy(isProgressVisible = true) }
+
+        // todo getInputImageUseCase
         fileUtils.getInputImage(imageUri).onSuccess { inputImage ->
             // todo lift logic to StateCase
             processInputImage(inputImage, imageUri)
@@ -134,6 +157,7 @@ class ImageProcessingViewModel(
             val objects = async { objectDetectionUseCase.call(inputImage).bind() }
             texts.await() to objects.await()
         }.onSuccess { (texts, objects) ->
+            println("image uri $imageUri")
             _state.update {
                 it.copy(
                     isProgressVisible = false,
@@ -141,7 +165,9 @@ class ImageProcessingViewModel(
                     detectedTextObjects = texts,
                     detectedObjects = objects,
                     imageState = ImageState(
-                        height = inputImage.height, width = inputImage.width, uri = imageUri
+                        height = inputImage.height,
+                        width = inputImage.width,
+                        uri = imageUri
                     )
                 )
             }
@@ -159,6 +185,8 @@ class ImageProcessingViewModel(
     }
 
     companion object {
-        private const val KEY_STATE = "STATE"
+        private val className by lazy { this::class.java.name }
+        internal val KEY_STATE = "${className}_state"
+        internal val KEY_SAVED_STATE_PROVIDER = "${className}_state_provider"
     }
 }

@@ -8,7 +8,6 @@ enum class GalleryPickerOption {
     IMAGE_ONLY;
 }
 
-
 // todo ui-core module
 fun GalleryPickerOption.toPickVisualMediaRequest(): PickVisualMediaRequest =
     when (this) {

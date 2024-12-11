@@ -5,13 +5,18 @@ import app.cash.turbine.test
 import arrow.core.left
 import arrow.core.right
 import com.google.mlkit.vision.common.InputImage
+import com.rempawl.image.processing.ImageProcessingViewModel.Companion.KEY_SAVED_STATE_PROVIDER
+import com.rempawl.image.processing.ImageProcessingViewModel.Companion.KEY_STATE
 import com.rempawl.image.processing.core.FileUtils
 import com.rempawl.image.processing.core.GalleryPickerOption
 import com.rempawl.image.processing.core.ImageSourcePickerOption.CAMERA
 import com.rempawl.image.processing.core.ImageSourcePickerOption.GALLERY
+import com.rempawl.image.processing.usecase.GetSavedStateUseCase
 import com.rempawl.image.processing.usecase.ObjectDetectionUseCase
+import com.rempawl.image.processing.usecase.SaveStateUseCase
 import com.rempawl.image.processing.usecase.TextDetectionUseCase
 import io.mockk.coEvery
+import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.delay
@@ -24,6 +29,12 @@ import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 class ImageProcessingViewModelTest : BaseCoroutineTest() {
+
+    private val getSavedStateUseCase =
+        mockk<GetSavedStateUseCase<ImageProcessingState>>()
+
+    private val saveStateUseCase =
+        mockk<SaveStateUseCase<ImageProcessingState>>(relaxUnitFun = true)
 
     private val objectDetectionUseCase = mockk<ObjectDetectionUseCase> {
         coEvery { call(any()) } returns (0..2).map {
@@ -47,13 +58,17 @@ class ImageProcessingViewModelTest : BaseCoroutineTest() {
         inputImageError: Throwable? = null,
         cameraUriError: Throwable? = null,
         inputImageDelay: Long? = null,
+        savedState: ImageProcessingState? = null,
     ): ImageProcessingViewModel {
+        getSavedStateUseCase.mock(savedState)
         textDetectionUseCase.mock(textDetectionError)
         fileUtils.mock(inputImageError, cameraUriError, inputImageDelay)
         val viewModel = ImageProcessingViewModel(
             objectDetectionUseCase = objectDetectionUseCase,
             textDetectionUseCase = textDetectionUseCase,
-            fileUtils = fileUtils
+            fileUtils = fileUtils,
+            saveStateUseCase = saveStateUseCase,
+            getSavedStateUseCase = getSavedStateUseCase
         )
         return viewModel
     }
@@ -69,7 +84,6 @@ class ImageProcessingViewModelTest : BaseCoroutineTest() {
     @Test
     fun `when select image fab clicked, then source picker options set`() = runTest {
         val viewmodel = createSUT() // todo extensions for state & effects testing
-
         viewmodel.state.test {
             awaitItem().run {
                 assertEquals(emptyList(), sourcePickerOptions)
@@ -246,12 +260,81 @@ class ImageProcessingViewModelTest : BaseCoroutineTest() {
     }
 
     @Test
-    fun `given camera picture taken ,when input image retrieval fails, then hide progress and show error`() =
+    fun `given empty camera uri, when camera picture taken, then uri retrieved from savedState `() =
+        runTest {
+            val viewModel = createSUT()
+            viewModel.state.test {
+                getSavedStateUseCase.mock(ImageProcessingState(cameraUri = SAVED_CAMERA_URI_STRING))
+                coVerifyNever { fileUtils.getInputImage(uri = SAVED_CAMERA_URI_STRING) }
+                awaitItem().run { assertEquals("", cameraUri) }
+
+                viewModel.submitAction(ImageProcessingAction.PictureTaken(isImageSaved = true))
+
+                coVerifyOrder {
+                    getSavedStateUseCase.call(param = any())
+                    fileUtils.getInputImage(uri = SAVED_CAMERA_URI_STRING)
+                }
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+
+    @Test
+    fun `given empty camera uri and no saved uri, when camera picture taken, then error is shown`() =
+        runTest {
+            val viewModel = createSUT()
+            viewModel.state.test {
+                awaitItem().run {
+                    assertEquals("", cameraUri)
+                    assertFalse(showError)
+                }
+
+                viewModel.submitAction(ImageProcessingAction.PictureTaken(isImageSaved = true))
+
+                awaitItem().run { assertTrue(showError) }
+            }
+        }
+
+
+    @Test
+    fun `given empty camera uri, when camera picture taken, then uri retrieved from saved state is processed`() =
+        runTest {
+            val viewModel = createSUT()
+            viewModel.state.test {
+                getSavedStateUseCase.mock(state = ImageProcessingState(cameraUri = SAVED_CAMERA_URI_STRING))
+                awaitItem().run {
+                    assertEquals("", cameraUri)
+                    assertTrue(detectedObjects.isEmpty())
+                    assertTrue(detectedTextObjects.isEmpty())
+                    assertEquals(ImageState(), imageState)
+                }
+
+                viewModel.submitAction(ImageProcessingAction.PictureTaken(isImageSaved = true))
+
+                expectMostRecentItem().run {
+                    assertTrue(detectedObjects.isNotEmpty())
+                    assertTrue(detectedTextObjects.isNotEmpty())
+                    assertEquals(
+                        ImageState(
+                            height = TEST_HEIGHT,
+                            width = TEST_WIDTH,
+                            uri = SAVED_CAMERA_URI_STRING
+                        ),
+                        imageState
+                    )
+                }
+            }
+        }
+
+    @Test
+    fun `given camera picture taken, when input image retrieval fails, then hide progress and show error`() =
         runTest {
             val viewModel =
                 createSUT(inputImageError = FAKE_THROWABLE, inputImageDelay = TEST_DELAY)
             viewModel.state.test {
-                awaitItem().run { assertFalse(showError) }
+                viewModel.submitAction(
+                    ImageProcessingAction.ImageSourcePickerOptionSelected(CAMERA)
+                )
+                expectMostRecentItem().run { assertFalse(showError) }
 
                 viewModel.submitAction(ImageProcessingAction.PictureTaken(isImageSaved = true))
                 awaitItem().run { assertTrue(isProgressVisible) }
@@ -269,7 +352,10 @@ class ImageProcessingViewModelTest : BaseCoroutineTest() {
         runTest {
             val viewModel = createSUT()
             viewModel.state.test {
-                awaitItem().run { assertFalse(isProgressVisible) }
+                viewModel.submitAction(
+                    ImageProcessingAction.ImageSourcePickerOptionSelected(CAMERA)
+                )
+                expectMostRecentItem().run { assertFalse(isProgressVisible) }
 
                 viewModel.submitAction(ImageProcessingAction.PictureTaken(isImageSaved = true))
 
@@ -449,6 +535,43 @@ class ImageProcessingViewModelTest : BaseCoroutineTest() {
         }
     }
 
+    @Test
+    fun `when lifecycle stopped, then most recent state saved`() = runTest {
+        val viewModel = createSUT()
+        viewModel.state.test {
+            coVerifyNever { saveStateUseCase.call(any()) }
+
+            viewModel.submitAction(ImageProcessingAction.LifecycleStopped)
+
+            coVerifyOnce {
+                saveStateUseCase.call(
+                    SaveStateUseCase.Param(
+                        state = expectMostRecentItem(),
+                        keyProvider = KEY_SAVED_STATE_PROVIDER,
+                        keyState = KEY_STATE
+                    )
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `when saved state retrieved, then it is set on init`() = runTest {
+        val savedState = ImageProcessingState(
+            cameraUri = CAMERA_URI_STRING,
+            detectedObjects = listOf(DetectedObject(TEST_RECT, "label")),
+            detectedTextObjects = listOf(DetectedTextObject(TEST_RECT)),
+            imageState = ImageState(TEST_HEIGHT, TEST_WIDTH, CAMERA_URI_STRING),
+        )
+        val viewModel = createSUT(savedState = savedState)
+        viewModel.state.test {
+            assertEquals(savedState, awaitItem())
+
+            expectNoEvents()
+        }
+
+    }
+
     private fun TextDetectionUseCase.mock(error: Throwable? = null) {
         coEvery { call(any()) } answers {
             error?.left() ?: listOf(DetectedTextObject(TEST_RECT)).right()
@@ -468,10 +591,16 @@ class ImageProcessingViewModelTest : BaseCoroutineTest() {
             ?: CAMERA_URI_STRING.right())
     }
 
+
+    private fun GetSavedStateUseCase<ImageProcessingState>.mock(state: ImageProcessingState? = null) {
+        coEvery { call(any()) } returns state
+    }
+
     companion object {
         const val TEST_DELAY = 2L
         val FAKE_THROWABLE = Throwable("test")
         const val CAMERA_URI_STRING = "camera uri"
+        const val SAVED_CAMERA_URI_STRING = "saved camera uri"
         val TEST_RECT = mockk<RectF>()
         val INITIAL_STATE = ImageProcessingState()
         const val TEST_HEIGHT = 3840

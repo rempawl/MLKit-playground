@@ -25,11 +25,10 @@ class MLKitDetectionRepository(
 
     suspend fun detectText(inputImage: InputImage): EitherResult<List<TextBlockWrapper>> =
         suspendCancellableCoroutine {
-            textRecognizer.process(inputImage)
-                .addOnSuccessListener { vision ->
-                    it.resume(vision.textBlocks.map { TextBlockWrapper.from(it) }.right())
-                }.addOnFailureListener { e ->
-                    it.resume(e.left())
-                }
+            textRecognizer.process(inputImage).addOnSuccessListener { vision ->
+                it.resume(vision.textBlocks.map { TextBlockWrapper.from(it) }.right())
+            }.addOnFailureListener { e ->
+                it.resume(e.left())
+            }
         }
 }

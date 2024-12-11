@@ -22,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.rempawl.image.processing.ImageProcessingAction
+import com.rempawl.image.processing.ImageProcessingAction.ImageSourcePickerOptionSelected
 import com.rempawl.image.processing.ImageProcessingState
 import com.rempawl.image.processing.R
 import com.rempawl.image.processing.core.ImageSourcePickerOption
@@ -39,7 +40,7 @@ fun ImageSourcePickerBottomSheet(
     ) {
         ImageSourcePickerBottomSheet(
             pickerOptions = state.sourcePickerOptions,
-            submitAction = { submitAction(ImageProcessingAction.ImageSourcePickerOptionSelected(it)) }
+            submitAction = { submitAction(ImageSourcePickerOptionSelected(it)) }
         )
     }
 }

@@ -2,7 +2,6 @@ package com.rempawl.image.processing.core
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import arrow.core.Either
@@ -37,7 +36,6 @@ class FileUtils(
 
     private suspend fun getInputImage(uri: Uri): EitherResult<InputImage> =
         withContext(dispatchersProvider.io) {
-            Log.d("kruci","get input image $uri")
             Either.catch {
                 InputImage.fromFilePath(context, uri)
             }
@@ -45,7 +43,5 @@ class FileUtils(
 
     companion object {
         const val IMAGES_CACHE_DIR = "images"
-
     }
-
 }

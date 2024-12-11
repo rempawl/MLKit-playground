@@ -47,6 +47,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -65,12 +67,15 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import org.koin.androidx.compose.navigation.koinNavViewModel
 
-@Destination<RootGraph>(start = true) // sets this as the start destination of the "root" nav graph
+@Destination<RootGraph>(start = true)
 @Composable
 fun ImageProcessingScreen(
     viewModel: ImageProcessingViewModel = koinNavViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    LifecycleEventEffect(Lifecycle.Event.ON_STOP) {
+        viewModel.submitAction(ImageProcessingAction.LifecycleStopped)
+    }
     EffectsObserver(
         effectsProvider = { viewModel.effects },
         submitAction = { viewModel.submitAction(it) }

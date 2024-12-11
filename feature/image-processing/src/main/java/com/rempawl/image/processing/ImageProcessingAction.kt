@@ -6,6 +6,7 @@ import com.rempawl.image.processing.core.ImageSourcePickerOption
 sealed interface ImageProcessingAction : Action {
     data object SelectImageFabClicked : ImageProcessingAction
     data object HideImageSourcePicker : ImageProcessingAction
+    data object LifecycleStopped : ImageProcessingAction
 
     data class PictureTaken(
         val isImageSaved: Boolean,
@@ -15,5 +16,6 @@ sealed interface ImageProcessingAction : Action {
         val imageUri: String,
     ) : ImageProcessingAction
 
-    data class ImageSourcePickerOptionSelected(val option: ImageSourcePickerOption) : ImageProcessingAction
+    data class ImageSourcePickerOptionSelected(val option: ImageSourcePickerOption) :
+        ImageProcessingAction
 }
