@@ -1,6 +1,5 @@
 package com.rempawl.image.processing.di
 
-import androidx.lifecycle.SavedStateHandle
 import com.google.mlkit.vision.objects.ObjectDetector
 import com.google.mlkit.vision.text.TextRecognizer
 import com.rempawl.image.processing.ImageProcessingState
@@ -17,8 +16,7 @@ import com.rempawl.image.processing.usecase.TextDetectionUseCase
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
-import org.koin.core.module.dsl.viewModel
-import org.koin.core.parameter.parametersOf
+import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
 val imageProcessingModule = module {
@@ -30,29 +28,12 @@ val imageProcessingModule = module {
     factoryOf(::ObjectDetectionUseCase)
     factoryOf(::TextDetectionUseCase)
     factoryOf(::MLKitDetectionRepository)
-    factory { (savedStateHandle: SavedStateHandle) ->
-        SaveStateUseCase<ImageProcessingState>(savedStateHandle = savedStateHandle, get())
-    }
-    factory { (savedStateHandle: SavedStateHandle) ->
-        GetSavedStateUseCase<ImageProcessingState>(
-            savedStateHandle = savedStateHandle,
+    factory {
+        SaveStateUseCase<ImageProcessingState>(
             get(),
             get()
         )
-    }
-    viewModel { (savedStateHandle: SavedStateHandle) ->
-        val savedStateUseCase by inject<SaveStateUseCase<ImageProcessingState>> {
-            parametersOf(savedStateHandle)
-        }
-        val getSavedStateUseCase by inject<GetSavedStateUseCase<ImageProcessingState>> {
-            parametersOf(savedStateHandle)
-        }
-        ImageProcessingViewModel(
-            objectDetectionUseCase = get(),
-            textDetectionUseCase = get(),
-            fileUtils = get(),
-            saveStateUseCase = savedStateUseCase,
-            getSavedStateUseCase = getSavedStateUseCase,
-        )
-    }
+    } // todo subclassing for easier DI
+    factory { GetSavedStateUseCase<ImageProcessingState>(get(), get(), get()) }
+    viewModelOf(::ImageProcessingViewModel)
 }
