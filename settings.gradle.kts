@@ -22,3 +22,8 @@ dependencyResolutionManagement {
 rootProject.name = "MlKit-playground"
 include(":app")
 include(":feature:image-processing")
+include(":core:core-android")
+include(":core:core-ui")
+include(":core:core-kotlin")
+include(":core:core-viewmodel")
+include(":data:image-processing")

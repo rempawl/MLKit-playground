@@ -7,7 +7,6 @@ import arrow.core.right
 import com.google.mlkit.vision.common.InputImage
 import com.rempawl.image.processing.ImageProcessingViewModel.Companion.KEY_SAVED_STATE_PROVIDER
 import com.rempawl.image.processing.ImageProcessingViewModel.Companion.KEY_STATE
-import com.rempawl.image.processing.core.FileUtils
 import com.rempawl.image.processing.core.GalleryPickerOption
 import com.rempawl.image.processing.core.ImageSourcePickerOption.CAMERA
 import com.rempawl.image.processing.core.ImageSourcePickerOption.GALLERY
@@ -49,7 +48,7 @@ class ImageProcessingViewModelTest : BaseCoroutineTest() {
         every { width } returns TEST_WIDTH
     }
 
-    private val fileUtils = mockk<FileUtils>()
+    private val imageProcessingRepository = mockk<com.rempawl.image.processing.ImageProcessingRepository>()
 
     private val textDetectionUseCase = mockk<TextDetectionUseCase>()
 
@@ -62,11 +61,11 @@ class ImageProcessingViewModelTest : BaseCoroutineTest() {
     ): ImageProcessingViewModel {
         getSavedStateUseCase.mock(savedState)
         textDetectionUseCase.mock(textDetectionError)
-        fileUtils.mock(inputImageError, cameraUriError, inputImageDelay)
+        imageProcessingRepository.mock(inputImageError, cameraUriError, inputImageDelay)
         val viewModel = ImageProcessingViewModel(
             objectDetectionUseCase = objectDetectionUseCase,
             textDetectionUseCase = textDetectionUseCase,
-            fileUtils = fileUtils,
+            imageProcessingRepository = imageProcessingRepository,
             saveStateUseCase = saveStateUseCase,
             getSavedStateUseCase = getSavedStateUseCase
         )
@@ -168,14 +167,14 @@ class ImageProcessingViewModelTest : BaseCoroutineTest() {
         runTest {
             val viewModel = createSUT()
             viewModel.state.test {
-                coVerifyNever { fileUtils.getTmpCameraFileUriString() }
+                coVerifyNever { imageProcessingRepository.getTmpCameraFileUriString() }
                 viewModel.submitAction(
                     ImageProcessingAction.ImageSourcePickerOptionSelected(
                         CAMERA
                     )
                 )
 
-                coVerifyOnce { fileUtils.getTmpCameraFileUriString() }
+                coVerifyOnce { imageProcessingRepository.getTmpCameraFileUriString() }
                 expectMostRecentItem().run {
                     assertFalse(isSourcePickerVisible)
                     assertEquals(emptyList(), sourcePickerOptions)
@@ -232,14 +231,14 @@ class ImageProcessingViewModelTest : BaseCoroutineTest() {
             val viewModel = createSUT(cameraUriError = FAKE_THROWABLE)
             viewModel.state.test {
                 awaitItem().run { assertFalse(showError) }
-                coVerifyNever { fileUtils.getTmpCameraFileUriString() }
+                coVerifyNever { imageProcessingRepository.getTmpCameraFileUriString() }
                 viewModel.submitAction(
                     ImageProcessingAction.ImageSourcePickerOptionSelected(
                         CAMERA
                     )
                 )
 
-                coVerifyOnce { fileUtils.getTmpCameraFileUriString() }
+                coVerifyOnce { imageProcessingRepository.getTmpCameraFileUriString() }
                 awaitItem().run {
                     assertEquals("", cameraUri)
                     assertTrue(showError)
@@ -265,14 +264,14 @@ class ImageProcessingViewModelTest : BaseCoroutineTest() {
             val viewModel = createSUT()
             viewModel.state.test {
                 getSavedStateUseCase.mock(ImageProcessingState(cameraUri = SAVED_CAMERA_URI_STRING))
-                coVerifyNever { fileUtils.getInputImage(uri = SAVED_CAMERA_URI_STRING) }
+                coVerifyNever { imageProcessingRepository.getInputImage(uri = SAVED_CAMERA_URI_STRING) }
                 awaitItem().run { assertEquals("", cameraUri) }
 
                 viewModel.submitAction(ImageProcessingAction.PictureTaken(isImageSaved = true))
 
                 coVerifyOrder {
                     getSavedStateUseCase.call(param = any())
-                    fileUtils.getInputImage(uri = SAVED_CAMERA_URI_STRING)
+                    imageProcessingRepository.getInputImage(uri = SAVED_CAMERA_URI_STRING)
                 }
                 cancelAndIgnoreRemainingEvents()
             }
@@ -578,7 +577,7 @@ class ImageProcessingViewModelTest : BaseCoroutineTest() {
         }
     }
 
-    private fun FileUtils.mock(
+    private fun com.rempawl.image.processing.ImageProcessingRepository.mock(
         inputImageError: Throwable? = null,
         cameraUriError: Throwable? = null,
         inputImageDelay: Long? = null,

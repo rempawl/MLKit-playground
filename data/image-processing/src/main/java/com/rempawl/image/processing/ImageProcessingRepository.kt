@@ -1,4 +1,4 @@
-package com.rempawl.image.processing.core
+package com.rempawl.image.processing
 
 import android.content.Context
 import android.net.Uri
@@ -6,14 +6,15 @@ import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import arrow.core.Either
 import com.google.mlkit.vision.common.InputImage
+import com.rempawl.core.kotlin.DispatchersProvider
+import com.rempawl.core.kotlin.EitherResult
 import kotlinx.coroutines.withContext
 import java.io.File
 
-class FileUtils(
+class ImageProcessingRepository(
     private val dispatchersProvider: DispatchersProvider,
     private val context: Context,
 ) {
-    // todo core-android module
     // todo interface
 
     suspend fun getTmpCameraFileUriString(): EitherResult<String> =
@@ -42,6 +43,6 @@ class FileUtils(
         }
 
     companion object {
-        const val IMAGES_CACHE_DIR = "images"
+        const val IMAGES_CACHE_DIR = "images" // todo app constant maybe
     }
 }

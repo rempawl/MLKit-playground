@@ -2,9 +2,9 @@ package com.rempawl.image.processing.usecase
 
 import androidx.core.graphics.toRectF
 import com.google.mlkit.vision.common.InputImage
+import com.rempawl.core.kotlin.EitherResult
+import com.rempawl.core.kotlin.UseCase
 import com.rempawl.image.processing.DetectedObject
-import com.rempawl.image.processing.core.EitherResult
-import com.rempawl.image.processing.core.UseCase
 import kotlin.math.roundToInt
 
 class ObjectDetectionUseCase(private val mlKitDetectionRepository: MLKitDetectionRepository) :

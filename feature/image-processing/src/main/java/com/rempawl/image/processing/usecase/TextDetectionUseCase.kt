@@ -2,9 +2,9 @@ package com.rempawl.image.processing.usecase
 
 import androidx.core.graphics.toRectF
 import com.google.mlkit.vision.common.InputImage
+import com.rempawl.core.kotlin.EitherResult
+import com.rempawl.core.kotlin.UseCase
 import com.rempawl.image.processing.DetectedTextObject
-import com.rempawl.image.processing.core.EitherResult
-import com.rempawl.image.processing.core.UseCase
 
 class TextDetectionUseCase(
     private val mlKitDetectionRepository: MLKitDetectionRepository,

@@ -17,7 +17,7 @@ android {
     namespace = "com.rempawl.image.processing"
 
     // todo plugin gradle for shared stuff
-    compileSdk = 34
+    compileSdk = 35
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -48,38 +48,38 @@ composeCompiler {
 }
 
 dependencies {
+    implementation(project(":core:core-kotlin"))
+    implementation(project(":core:core-ui"))
+    implementation(project(":core:core-android"))
+    implementation(project(":core:core-viewmodel"))
+    implementation(project(":data:image-processing"))
     // todo gradle plugin for dependencies
     implementation(libs.compose.destinations.core)
     ksp(libs.compose.destinations.ksp)
     implementation(libs.compose.destinations.bottomsheet)
 
-    implementation(libs.koin.core)
     implementation(libs.koin.android)
     implementation(libs.koin.androidx.compose)
     implementation(libs.koin.androidx.compose.navigation)
-    
+
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
+
     implementation(libs.material)
     implementation(libs.androidx.lifecycle.viewmodel.android)
-    implementation(libs.kotlinx.coroutines.android)
-
-    implementation(platform(libs.arrow.stack))
-    implementation(libs.arrow.core)
-    implementation(libs.arrow.fx.coroutines)
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
+
     implementation(libs.androidx.lifecycle.runtime.compose.android)
 
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
+
     implementation(libs.coil.compose)
     implementation(libs.coil)
 
-    api(libs.objects.detection.custom)
-    api(libs.play.services.mlkit.text.recognition)
     implementation(libs.androidx.material3.android)
     implementation(libs.androidx.runtime.tracing)
 

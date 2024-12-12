@@ -3,8 +3,8 @@ package com.rempawl.image.processing.usecase
 import android.os.Parcelable
 import androidx.core.os.bundleOf
 import androidx.lifecycle.SavedStateHandle
-import com.rempawl.image.processing.core.DispatchersProvider
-import com.rempawl.image.processing.core.UseCase
+import com.rempawl.core.kotlin.DispatchersProvider
+import com.rempawl.core.kotlin.UseCase
 import com.rempawl.image.processing.usecase.SaveStateUseCase.Param
 import kotlinx.coroutines.withContext
 

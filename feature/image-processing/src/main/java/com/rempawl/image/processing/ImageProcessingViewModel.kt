@@ -4,11 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import arrow.core.raise.either
 import com.google.mlkit.vision.common.InputImage
-import com.rempawl.image.processing.core.FileUtils
+import com.rempawl.core.kotlin.onError
+import com.rempawl.core.kotlin.onSuccess
 import com.rempawl.image.processing.core.GalleryPickerOption
 import com.rempawl.image.processing.core.ImageSourcePickerOption
-import com.rempawl.image.processing.core.onError
-import com.rempawl.image.processing.core.onSuccess
 import com.rempawl.image.processing.usecase.GetSavedStateUseCase
 import com.rempawl.image.processing.usecase.GetSavedStateUseCase.SavedStateParam
 import com.rempawl.image.processing.usecase.ObjectDetectionUseCase
@@ -25,10 +24,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+// todo add saveable interface and use delegate on BaseViewModel
 class ImageProcessingViewModel(
     private val objectDetectionUseCase: ObjectDetectionUseCase,
     private val textDetectionUseCase: TextDetectionUseCase,
-    private val fileUtils: FileUtils, // todo usecases
+    private val imageProcessingRepository: com.rempawl.image.processing.ImageProcessingRepository, // todo usecases
     private val saveStateUseCase: SaveStateUseCase<ImageProcessingState>,
     private val getSavedStateUseCase: GetSavedStateUseCase<ImageProcessingState>,
 ) : ViewModel() {
@@ -101,7 +101,7 @@ class ImageProcessingViewModel(
 
     private suspend fun tryOpenCamera() {
         // todo getTmpCameraFileUsecase
-        fileUtils.getTmpCameraFileUriString().onSuccess { uri ->
+        imageProcessingRepository.getTmpCameraFileUriString().onSuccess { uri ->
             _state.update { it.copy(cameraUri = uri) }
             setEffect(ImageProcessingEffect.TakePicture(uri))
         }.onError {
@@ -136,7 +136,7 @@ class ImageProcessingViewModel(
         _state.update { it.copy(isProgressVisible = true) }
 
         // todo getInputImageUseCase
-        fileUtils.getInputImage(imageUri).onSuccess { inputImage ->
+        imageProcessingRepository.getInputImage(imageUri).onSuccess { inputImage ->
             // todo lift logic to StateCase
             processInputImage(inputImage, imageUri)
         }.onError {

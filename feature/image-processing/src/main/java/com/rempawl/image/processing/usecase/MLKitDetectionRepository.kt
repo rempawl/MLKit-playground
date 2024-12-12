@@ -6,7 +6,7 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.objects.DetectedObject
 import com.google.mlkit.vision.objects.ObjectDetector
 import com.google.mlkit.vision.text.TextRecognizer
-import com.rempawl.image.processing.core.EitherResult
+import com.rempawl.core.kotlin.EitherResult
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 

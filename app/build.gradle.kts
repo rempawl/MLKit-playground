@@ -88,6 +88,11 @@ composeCompiler {
 
 dependencies {
     implementation(project(":feature:image-processing"))
+    implementation(project(":core:core-android"))
+    implementation(project(":core:core-ui"))
+    implementation(project(":core:core-kotlin"))
+    implementation(project(":core:core-viewmodel"))
+
     implementation(libs.compose.destinations.core)
     ksp(libs.compose.destinations.ksp)
     implementation(libs.compose.destinations.bottomsheet)

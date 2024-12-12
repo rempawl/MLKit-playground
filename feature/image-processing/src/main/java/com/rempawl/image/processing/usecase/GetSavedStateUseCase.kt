@@ -2,9 +2,9 @@ package com.rempawl.image.processing.usecase
 
 import android.os.Bundle
 import androidx.lifecycle.SavedStateHandle
-import com.rempawl.image.processing.core.DispatchersProvider
-import com.rempawl.image.processing.core.ParcelableUtils
-import com.rempawl.image.processing.core.UseCase
+import com.rempawl.core.android.ParcelableUtils
+import com.rempawl.core.kotlin.DispatchersProvider
+import com.rempawl.core.kotlin.UseCase
 import kotlinx.coroutines.withContext
 
 // todo core-android module

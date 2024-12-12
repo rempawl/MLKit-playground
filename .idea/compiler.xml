@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
-    <bytecodeTargetLevel target="21" />
+    <bytecodeTargetLevel target="21">
+      <module name="MlKit-playground.core-image-processing" target="11" />
+      <module name="MlKit-playground.core-image-processing.main" target="11" />
+      <module name="MlKit-playground.core-image-processing.test" target="11" />
+      <module name="MlKit-playground.core.image-processing" target="11" />
+      <module name="MlKit-playground.core.image-processing.main" target="11" />
+      <module name="MlKit-playground.core.image-processing.test" target="11" />
+    </bytecodeTargetLevel>
   </component>
 </project>
