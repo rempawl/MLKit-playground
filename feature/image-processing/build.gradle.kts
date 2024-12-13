@@ -4,13 +4,11 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
     // for junit5 on gradle 7+
-    id("de.mannodermaus.android-junit5") version "1.9.3.0"
     id("org.jlleitschuh.gradle.ktlint") version "11.1.0"
     alias(libs.plugins.compose.compiler)
-    kotlin("plugin.serialization") version "2.1.0"
     id("kotlin-parcelize")
+    id("de.mannodermaus.android-junit5") // todo add to toml and shared android plugin
     id("com.google.devtools.ksp") version "2.0.0-1.0.21"
-
 }
 
 android {
@@ -62,7 +60,6 @@ dependencies {
     implementation(libs.koin.androidx.compose)
     implementation(libs.koin.androidx.compose.navigation)
 
-    implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
 
@@ -83,11 +80,5 @@ dependencies {
     implementation(libs.androidx.material3.android)
     implementation(libs.androidx.runtime.tracing)
 
-    testImplementation(libs.kotlinx.coroutines.test)
-    testImplementation(libs.mockk)
-    testImplementation(libs.mockk.android)
-    testImplementation(libs.mockk.agent)
-    testImplementation(libs.junit.jupiter)
-    testImplementation(libs.turbine)
-    testImplementation(libs.kotlin.test.junit)
+    testImplementation(project(":core:test-utils"))
 }

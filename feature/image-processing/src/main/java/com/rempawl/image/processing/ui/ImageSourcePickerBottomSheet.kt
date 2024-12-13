@@ -21,9 +21,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.rempawl.image.processing.ImageProcessingAction
-import com.rempawl.image.processing.ImageProcessingAction.ImageSourcePickerOptionSelected
-import com.rempawl.image.processing.ImageProcessingState
+import com.rempawl.image.processing.viewmodel.ImageProcessingAction
+import com.rempawl.image.processing.viewmodel.ImageProcessingAction.ImageSourcePickerOptionSelected
+import com.rempawl.image.processing.viewmodel.ImageProcessingState
 import com.rempawl.image.processing.R
 import com.rempawl.image.processing.core.ImageSourcePickerOption
 

@@ -8,6 +8,7 @@ plugins {
     kotlin("plugin.serialization") version "2.1.0" apply false
     id("kotlin-parcelize")
     id("com.google.devtools.ksp") version "2.0.0-1.0.21"
+    id("de.mannodermaus.android-junit5")
 }
 
 android {
@@ -31,7 +32,7 @@ android {
     signingConfigs {
         create("release") {
             this.initWith(signingConfigs.getByName("debug"))
-        // todo
+            // todo
         }
     }
 
@@ -121,8 +122,7 @@ dependencies {
     implementation(libs.material)
     implementation(libs.kotlinx.serialization.json)
 
-    testImplementation(libs.koin.test.junit4)
-    testImplementation(libs.junit)
+    testImplementation(project(":core:test-utils"))
 
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -135,5 +135,4 @@ dependencies {
 
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-//    debugImplementation(libs.leakcanary.android)
 }

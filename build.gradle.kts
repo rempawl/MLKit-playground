@@ -6,4 +6,5 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint") version "11.1.0" apply false
     id("com.google.devtools.ksp") version "2.0.0-1.0.21" apply false
     alias(libs.plugins.jetbrains.kotlin.jvm) apply false
+    id("de.mannodermaus.android-junit5") version "1.9.3.0" apply false
 }

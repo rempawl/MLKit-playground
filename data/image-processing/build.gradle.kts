@@ -1,10 +1,13 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
+    id("kotlin-parcelize")
+    id("de.mannodermaus.android-junit5")
+
 }
 
 android {
-    namespace = "com.rempawl.image.processing"
+    namespace = "com.rempawl.data.image.processing"
     compileSdk = 35
 
     defaultConfig {
@@ -39,10 +42,14 @@ dependencies {
     api(libs.objects.detection.custom)
     api(libs.play.services.mlkit.text.recognition)
 
+    implementation(libs.koin.android)
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
-    testImplementation(libs.junit)
+
+    testImplementation(project(":core:test-utils"))
+
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 }
