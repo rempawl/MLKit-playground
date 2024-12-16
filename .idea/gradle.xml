@@ -4,6 +4,17 @@
   <component name="GradleSettings">
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
+        <compositeConfiguration>
+          <compositeBuild compositeDefinitionSource="SCRIPT">
+            <builds>
+              <build path="$PROJECT_DIR$/plugin-shared" name="plugin-shared">
+                <projects>
+                  <project path="$PROJECT_DIR$/plugin-shared" />
+                </projects>
+              </build>
+            </builds>
+          </compositeBuild>
+        </compositeConfiguration>
         <option name="testRunner" value="CHOOSE_PER_TEST" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="gradleJvm" value="#GRADLE_LOCAL_JAVA_HOME" />
@@ -21,6 +32,7 @@
             <option value="$PROJECT_DIR$/data/image-processing" />
             <option value="$PROJECT_DIR$/feature" />
             <option value="$PROJECT_DIR$/feature/image-processing" />
+            <option value="$PROJECT_DIR$/plugin-shared" />
           </set>
         </option>
         <option name="resolveExternalAnnotations" value="false" />

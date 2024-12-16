@@ -1,24 +1,15 @@
 plugins {
-    alias(libs.plugins.jetbrains.kotlin.jvm)
+    id("com.rempawl.shared.kotlin")
 }
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
-}
 
-kotlin {
-    compilerOptions {
-        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
-    }
-}
 dependencies{
     implementation(project(":core:core-kotlin"))
 
-    api(libs.kotlinx.coroutines.test)
-    api(libs.mockk)
-    api(libs.junit.jupiter)
-    api(libs.turbine)
-    api(libs.kotlin.test.junit)
-    api(libs.koin.test.junit4)
+    implementation(libs.kotlinx.coroutines.test)
+    implementation(libs.mockk)
+    implementation(libs.junit.jupiter)
+    implementation(libs.turbine)
+    implementation(libs.kotlin.test.junit)
+    implementation(libs.koin.test.junit4)
 }

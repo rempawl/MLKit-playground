@@ -1,0 +1,44 @@
+plugins {
+    id "com.rempawl.shared.android"
+    id "com.google.devtools.ksp"
+    id "com.rempawl.ktlint"
+    id "kotlin-parcelize"
+    id("org.jetbrains.kotlin.plugin.compose")
+}
+android {
+    buildFeatures {
+        compose = true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion = libs.versions.composeCompiler.get()
+    }
+}
+
+composeCompiler {
+    reportsDestination = layout.buildDirectory.dir("compose_compiler")
+//    stabilityConfigurationFile = rootProject.layout.projectDirectory.file("stability_config.conf") todo
+}
+
+dependencies {
+    implementation(project(":core:core-kotlin"))
+    implementation(project(":core:core-android"))
+    implementation(project(":core:core-ui"))
+    implementation(project(":core:core-viewmodel"))
+
+    implementation(platform(libs.androidx.compose.bom))
+
+    // todo check if needed in all feature modules
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.ui)
+    implementation(libs.androidx.ui.graphics)
+    implementation(libs.androidx.runtime.tracing)
+    implementation(libs.androidx.material3.android)
+    implementation(libs.androidx.lifecycle.runtime.compose.android)
+    implementation(libs.androidx.lifecycle.viewmodel.android)
+
+    implementation(libs.compose.destinations.core)
+    ksp(libs.compose.destinations.ksp)
+    implementation(libs.compose.destinations.bottomsheet)
+    implementation(libs.koin.androidx.compose)
+    implementation(libs.koin.androidx.compose.navigation)
+}

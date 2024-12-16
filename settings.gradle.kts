@@ -1,4 +1,6 @@
 pluginManagement {
+    includeBuild("plugin-shared")
+
     repositories {
         google {
             content {

@@ -1,14 +1,11 @@
-import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.compose.compiler)
-    id("org.jlleitschuh.gradle.ktlint") version "11.1.0" // todo libs.plugins
-    kotlin("plugin.serialization") version "2.1.0" apply false
-    id("kotlin-parcelize")
-    id("com.google.devtools.ksp") version "2.0.0-1.0.21"
-    id("de.mannodermaus.android-junit5")
+    alias(libs.plugins.ktlint)
+    alias(libs.plugins.kotlin.parcelize)
+    alias(libs.plugins.android.junit5)
+    alias(libs.plugins.kotlin.ksp)
 }
 
 android {
@@ -71,15 +68,7 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
-    ktlint {
-        android = true
-        ignoreFailures = true
-        disabledRules.addAll("no-wildcard-imports", "final-newline")
-        reporters {
-            reporter(ReporterType.HTML)
-            reporter(ReporterType.PLAIN)
-        }
-    }
+
 }
 
 composeCompiler {
@@ -119,7 +108,6 @@ dependencies {
 
     implementation(libs.firebase.core)
     implementation(libs.firebase.ml.model.interpreter)
-    implementation(libs.material)
     implementation(libs.kotlinx.serialization.json)
 
     testImplementation(project(":core:test-utils"))
