@@ -13,7 +13,6 @@ import java.io.File
 
 internal class ImageProcessingRepositoryImpl(
     private val dispatchersProvider: DispatchersProvider,
-    // todo file provider in core-android
     private val context: Context,
 ) : ImageProcessingRepository {
 
@@ -45,6 +44,7 @@ internal class ImageProcessingRepositoryImpl(
         }
 
     companion object {
-        const val IMAGES_CACHE_DIR = "images" // todo app constant maybe
+        const val IMAGES_CACHE_DIR = "images"
+        // todo injected app constant via constantsProvider interface?
     }
 }

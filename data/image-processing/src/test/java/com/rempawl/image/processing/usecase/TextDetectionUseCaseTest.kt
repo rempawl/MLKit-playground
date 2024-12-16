@@ -16,7 +16,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
-
 class TextDetectionUseCaseTest : BaseCoroutineTest() {
 
     private val repository = mockk<MLKitDetectionRepositoryImpl>()
@@ -70,7 +69,6 @@ class TextDetectionUseCaseTest : BaseCoroutineTest() {
         }
     }
 
-
     @Test
     fun `when repository returns empty block, then empty list returned`() = runTest {
         repository.mock(
@@ -112,6 +110,4 @@ class TextDetectionUseCaseTest : BaseCoroutineTest() {
         val TEST_RECT = Rect(1, 2, 3, 4)
         val TEST_THROWABLE = Throwable("error")
     }
-
-
 }

@@ -8,7 +8,7 @@ import com.rempawl.image.processing.model.DetectedObject
 import com.rempawl.image.processing.repository.MLKitDetectionRepository
 import kotlin.math.roundToInt
 
-class ObjectDetectionUseCase internal constructor(private val mlKitDetectionRepository: MLKitDetectionRepository) :
+internal class ObjectDetectionUseCase(private val mlKitDetectionRepository: MLKitDetectionRepository) :
     UseCase<InputImage, EitherResult<List<DetectedObject>>> {
 
     override suspend fun call(param: InputImage): EitherResult<List<DetectedObject>> =

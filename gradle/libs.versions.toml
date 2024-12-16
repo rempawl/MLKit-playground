@@ -67,8 +67,6 @@ arrow-fx-coroutines = { module = "io.arrow-kt:arrow-fx-coroutines" }
 arrow-stack = { module = "io.arrow-kt:arrow-stack", version.ref = "arrowStack" }
 coil = { module = "io.coil-kt:coil", version.ref = "coil" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
-firebase-core = { module = "com.google.firebase:firebase-core", version.ref = "firebaseCore" }
-firebase-ml-model-interpreter = { module = "com.google.firebase:firebase-ml-model-interpreter", version.ref = "firebaseMlModelInterpreter" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 junit-bom = { module = "org.junit:junit-bom", version.ref = "junitBom" }
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
@@ -79,8 +77,6 @@ androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-co
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
-androidx-ui = { group = "androidx.compose.ui", name = "ui" }
-androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
 androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
@@ -95,17 +91,12 @@ kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinxCoroutinesAndroid" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesTest" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
-leakcanary-android = { module = "com.squareup.leakcanary:leakcanary-android", version.ref = "leakcanaryAndroid" }
 leakcanary-android-instrumentation = { module = "com.squareup.leakcanary:leakcanary-android-instrumentation", version.ref = "leakcanaryAndroidInstrumentation" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 mockk-agent = { module = "io.mockk:mockk-agent", version.ref = "mockkAgent" }
 mockk-android = { module = "io.mockk:mockk-android", version.ref = "mockkAndroid" }
 objects-detection-custom = { module = "com.google.mlkit:object-detection-custom", version.ref = "objectDetectionCustom" }
 play-services-mlkit-text-recognition = { module = "com.google.android.gms:play-services-mlkit-text-recognition", version.ref = "playServicesMlkitTextRecognition" }
-androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
-androidx-camera-core = { group = "androidx.camera", name = "camera-core", version.ref = "cameraCore" }
-
-
 
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 androidx-lifecycle-viewmodel-android = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-android", version.ref = "lifecycleViewmodelAndroid" }

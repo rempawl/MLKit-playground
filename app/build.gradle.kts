@@ -2,22 +2,22 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.compose.compiler)
-    alias(libs.plugins.ktlint)
     alias(libs.plugins.kotlin.parcelize)
     alias(libs.plugins.android.junit5)
     alias(libs.plugins.kotlin.ksp)
+    id("com.rempawl.ktlint")
 }
 
 android {
     namespace = "com.rempawl.mlkit_playground"
-    compileSdk = 35
+    compileSdk = libs.versions.compileSDK.get().toInt()
     androidResources {
         noCompress += "tflite"
     }
     defaultConfig {
         applicationId = "com.rempawl.mlkit_playground"
-        minSdk = 27
-        targetSdk = 35
+        minSdk = libs.versions.minSDK.get().toInt()
+        targetSdk = libs.versions.targetSDK.get().toInt()
         versionCode = 1
         versionName = "1.0"
 
@@ -47,7 +47,6 @@ android {
                 "proguard-rules.pro"
             )
             signingConfig = signingConfigs.getByName("release")
-
         }
     }
     compileOptions {
@@ -68,7 +67,9 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
-
+    ktlint {
+        android = true
+    }
 }
 
 composeCompiler {
@@ -77,11 +78,10 @@ composeCompiler {
 }
 
 dependencies {
-    implementation(project(":feature:image-processing"))
-    implementation(project(":core:core-android"))
-    implementation(project(":core:core-ui"))
     implementation(project(":core:core-kotlin"))
+    implementation(project(":core:core-android"))
     implementation(project(":core:core-viewmodel"))
+    implementation(project(":feature:image-processing"))
 
     implementation(libs.compose.destinations.core)
     ksp(libs.compose.destinations.ksp)
@@ -99,18 +99,12 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.compose.android)
     implementation(libs.androidx.runtime.tracing)
 
-    implementation(libs.androidx.ui)
-    implementation(libs.androidx.ui.graphics)
-    implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    implementation(libs.androidx.constraintlayout)
-    implementation(libs.androidx.camera.core)
-
-    implementation(libs.firebase.core)
-    implementation(libs.firebase.ml.model.interpreter)
-    implementation(libs.kotlinx.serialization.json)
 
     testImplementation(project(":core:test-utils"))
+    testImplementation(platform(libs.junit.bom))
+    testImplementation(libs.junit.jupiter)
+    testRuntimeOnly(libs.junit.platform.launcher)
 
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

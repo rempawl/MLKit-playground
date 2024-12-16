@@ -66,6 +66,7 @@ import com.rempawl.image.processing.core.toPickVisualMediaRequest
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import org.koin.androidx.compose.navigation.koinNavViewModel
+// todo previews!
 
 @Destination<RootGraph>(start = true)
 @Composable

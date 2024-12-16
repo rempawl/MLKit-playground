@@ -4,8 +4,7 @@ import org.koin.core.module.Module
 import org.koin.test.KoinTest
 import org.koin.test.verify.verify
 
-
-abstract class BaseTestKoinModule() : KoinTest {
+abstract class BaseTestKoinModule : KoinTest {
 
     abstract fun provideModule(): Module
 

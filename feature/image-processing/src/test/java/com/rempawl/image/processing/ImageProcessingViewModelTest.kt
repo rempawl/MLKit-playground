@@ -4,7 +4,6 @@ import android.graphics.RectF
 import app.cash.turbine.test
 import arrow.core.left
 import arrow.core.right
-import com.google.mlkit.vision.common.InputImage
 import com.rempawl.core.viewmodel.usecase.GetSavedStateUseCase
 import com.rempawl.core.viewmodel.usecase.SaveStateUseCase
 import com.rempawl.image.processing.core.GalleryPickerOption
@@ -12,12 +11,11 @@ import com.rempawl.image.processing.core.ImageSourcePickerOption.CAMERA
 import com.rempawl.image.processing.core.ImageSourcePickerOption.GALLERY
 import com.rempawl.image.processing.model.DetectedObject
 import com.rempawl.image.processing.model.DetectedTextObject
+import com.rempawl.image.processing.model.ImageProcessingResult
 import com.rempawl.image.processing.usecase.GetCameraPhotoUriUseCase
 import com.rempawl.image.processing.usecase.GetImageProcessingSavedStateUseCase
-import com.rempawl.image.processing.usecase.GetInputImageUseCase
-import com.rempawl.image.processing.usecase.ObjectDetectionUseCase
+import com.rempawl.image.processing.usecase.ProcessImageUseCase
 import com.rempawl.image.processing.usecase.SaveImageProcessingStateUseCase
-import com.rempawl.image.processing.usecase.TextDetectionUseCase
 import com.rempawl.image.processing.viewmodel.ImageProcessingAction
 import com.rempawl.image.processing.viewmodel.ImageProcessingEffect
 import com.rempawl.image.processing.viewmodel.ImageProcessingState
@@ -28,11 +26,9 @@ import com.rempawl.image.processing.viewmodel.ImageState
 import com.rempawl.test.utils.coVerifyNever
 import com.rempawl.test.utils.coVerifyOnce
 import io.mockk.coEvery
-import io.mockk.coVerifyOrder
-import io.mockk.every
+import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -40,6 +36,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
+/* ktlint-disable max-line-length */
 class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() {
 
     private val getSavedStateUseCase =
@@ -48,39 +45,28 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
     private val saveStateUseCase =
         mockk<SaveImageProcessingStateUseCase>(relaxUnitFun = true)
 
-    private val objectDetectionUseCase = mockk<ObjectDetectionUseCase> {
-        coEvery { call(any()) } returns (0..2).map {
-            DetectedObject(
-                TEST_RECT, "label $it"
-            )
-        }.right()
-    }
 
-    private val inputImage = mockk<InputImage> {
-        every { height } returns TEST_HEIGHT
-        every { width } returns TEST_WIDTH
-    }
+//    private val inputImage = mockk<InputImage> {
+//        every { height } returns TEST_HEIGHT
+//        every { width } returns TEST_WIDTH todo move test to processimageusecase
+//    }
 
-    private val getInputImageUseCase = mockk<GetInputImageUseCase>()
     private val getCameraUriUseCase = mockk<GetCameraPhotoUriUseCase>()
 
-    private val textDetectionUseCase = mockk<TextDetectionUseCase>()
+    private val imageProcessingUseCase = mockk<ProcessImageUseCase>()
 
     private fun createSUT(
         textDetectionError: Throwable? = null,
-        inputImageError: Throwable? = null,
         cameraUriError: Throwable? = null,
-        inputImageDelay: Long? = null,
         savedState: ImageProcessingState? = null,
+        processImageDelay: Long? = null,
     ): ImageProcessingViewModel {
         getSavedStateUseCase.mock(savedState)
-        textDetectionUseCase.mock(textDetectionError)
-        getInputImageUseCase.mock(inputImageError, inputImageDelay)
+        imageProcessingUseCase.mock(textDetectionError, processImageDelay)
+//        getInputImageUseCase.mock(inputImageError, inputImageDelay) todo move test to processimageusecase
         getCameraUriUseCase.mock(cameraUriError)
         val viewModel = ImageProcessingViewModel(
-            objectDetectionUseCase = objectDetectionUseCase,
-            textDetectionUseCase = textDetectionUseCase,
-            getInputImageUseCase = getInputImageUseCase,
+            processImageUseCase = imageProcessingUseCase,
             getCameraPhotoUriUseCase = getCameraUriUseCase,
             saveStateUseCase = saveStateUseCase,
             getSavedStateUseCase = getSavedStateUseCase
@@ -280,16 +266,15 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
             val viewModel = createSUT()
             viewModel.state.test {
                 getSavedStateUseCase.mock(ImageProcessingState(cameraUri = SAVED_CAMERA_URI_STRING))
-                coVerifyNever {
-                    getInputImageUseCase.call(SAVED_CAMERA_URI_STRING)
+                coVerifyOnce {
+                    getSavedStateUseCase.call(param = any())
                 }
                 awaitItem().run { assertEquals("", cameraUri) }
 
                 viewModel.submitAction(ImageProcessingAction.PictureTaken(isImageSaved = true))
 
-                coVerifyOrder {
+                coVerify(exactly = 2) {
                     getSavedStateUseCase.call(param = any())
-                    getInputImageUseCase.call(SAVED_CAMERA_URI_STRING)
                 }
                 cancelAndIgnoreRemainingEvents()
             }
@@ -341,32 +326,32 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
             }
         }
 
-    @Test
-    fun `given camera picture taken, when input image retrieval fails, then hide progress and show error`() =
-        runTest {
-            val viewModel =
-                createSUT(inputImageError = FAKE_THROWABLE, inputImageDelay = TEST_DELAY)
-            viewModel.state.test {
-                viewModel.submitAction(
-                    ImageProcessingAction.ImageSourcePickerOptionSelected(CAMERA)
-                )
-                expectMostRecentItem().run { assertFalse(showError) }
+    /*  @Test todo probably not needed after moving to process image usecase
+      fun `given camera picture taken, when input image retrieval fails, then hide progress and show error`() =
+          runTest {
+              val viewModel =
+                  createSUT()
+              viewModel.state.test {
+                  viewModel.submitAction(
+                      ImageProcessingAction.ImageSourcePickerOptionSelected(CAMERA)
+                  )
+                  expectMostRecentItem().run { assertFalse(showError) }
 
-                viewModel.submitAction(ImageProcessingAction.PictureTaken(isImageSaved = true))
-                awaitItem().run { assertTrue(isProgressVisible) }
+                  viewModel.submitAction(ImageProcessingAction.PictureTaken(isImageSaved = true))
+                  awaitItem().run { assertTrue(isProgressVisible) }
 
-                advanceTimeBy(TEST_DELAY)
-                awaitItem().run {
-                    assertTrue(showError)
-                    assertFalse(isProgressVisible)
-                }
-            }
-        }
+                  advanceTimeBy(TEST_DELAY)
+                  awaitItem().run {
+                      assertTrue(showError)
+                      assertFalse(isProgressVisible)
+                  }
+              }
+          }*/
 
     @Test
     fun `when processing camera photo, then progress is shown and hidden`() =
         runTest {
-            val viewModel = createSUT()
+            val viewModel = createSUT(processImageDelay = TEST_DELAY)
             viewModel.state.test {
                 viewModel.submitAction(
                     ImageProcessingAction.ImageSourcePickerOptionSelected(CAMERA)
@@ -383,7 +368,7 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
     @Test
     fun `when camera photo processed, then imageState detected objects and texts are set `() =
         runTest {
-            val viewModel = createSUT()
+            val viewModel = createSUT(processImageDelay = TEST_DELAY)
             viewModel.state.test {
                 awaitItem().run {
                     assertEquals(emptyList(), detectedObjects)
@@ -433,33 +418,30 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
     fun `when process image called, then text and object detection use cases called`() = runTest {
         val viewModel = createSUT()
         coVerifyNever {
-            objectDetectionUseCase.call(any())
-            textDetectionUseCase.call(any())
+            imageProcessingUseCase.call(any())
         }
 
         viewModel.submitAction(ImageProcessingAction.GalleryImagePicked("uri"))
 
         coVerifyOnce {
-            objectDetectionUseCase.call(any())
-            textDetectionUseCase.call(any())
+            imageProcessingUseCase.call(any())
         }
     }
 
-    @Test
-    fun `when retrieving input image fails, then no use cases called`() = runTest {
-        val viewModel = createSUT(inputImageError = FAKE_THROWABLE)
+    /*    @Test todo move to processimageusecase
+        fun `when retrieving input image fails, then no use cases called`() = runTest {
+            val viewModel = createSUT()
 
-        viewModel.submitAction(ImageProcessingAction.GalleryImagePicked("uri"))
+            viewModel.submitAction(ImageProcessingAction.GalleryImagePicked("uri"))
 
-        coVerifyNever {
-            objectDetectionUseCase.call(any())
-            textDetectionUseCase.call(any())
-        }
-    }
+            coVerifyNever {
+                imageProcessingUseCase.call(any())
+            }
+        }*/
 
     @Test
     fun `when image selected then progress is shown and uri is set`() = runTest {
-        val viewModel = createSUT()
+        val viewModel = createSUT(processImageDelay = TEST_DELAY)
         viewModel.state.test {
             assertEquals(INITIAL_STATE, awaitItem())
 
@@ -477,7 +459,7 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
     @Test
     fun `when image is processed, then progress is hidden and detected objects and texts are set`() =
         runTest {
-            val viewModel = createSUT()
+            val viewModel = createSUT(processImageDelay = TEST_DELAY)
             viewModel.state.test {
                 assertEquals(INITIAL_STATE, awaitItem())
 
@@ -516,7 +498,10 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
 
     @Test
     fun `when error occurs then progress is hidden and error is shown`() = runTest {
-        val viewModel = createSUT(textDetectionError = FAKE_THROWABLE)
+        val viewModel = createSUT(
+            textDetectionError = FAKE_THROWABLE,
+            processImageDelay = TEST_DELAY
+        )
         viewModel.state.test {
             assertEquals(INITIAL_STATE, awaitItem())
 
@@ -532,24 +517,24 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
         }
     }
 
-    @Test
-    fun `when retrieving input image fails, then error is shown`() = runTest {
-        val viewModel = createSUT(inputImageError = FAKE_THROWABLE)
-        viewModel.state.test {
-            assertEquals(INITIAL_STATE, awaitItem())
+    /*    @Test todo move to processimageusecase
+        fun `when retrieving input image fails, then error is shown`() = runTest {
+            val viewModel = createSUT()
+            viewModel.state.test {
+                assertEquals(INITIAL_STATE, awaitItem())
 
-            viewModel.submitAction(
-                ImageProcessingAction.GalleryImagePicked(
-                    "uri",
+                viewModel.submitAction(
+                    ImageProcessingAction.GalleryImagePicked(
+                        "uri",
+                    )
                 )
-            )
 
-            assertEquals(
-                INITIAL_STATE.copy(isProgressVisible = false, showError = true),
-                awaitItem()
-            )
-        }
-    }
+                assertEquals(
+                    INITIAL_STATE.copy(isProgressVisible = false, showError = true),
+                    awaitItem()
+                )
+            }
+        }*/
 
     @Test
     fun `when lifecycle stopped, then most recent state saved`() = runTest {
@@ -587,19 +572,15 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
         }
     }
 
-    private fun TextDetectionUseCase.mock(error: Throwable? = null) {
-        coEvery { call(any()) } answers {
-            error?.left() ?: listOf(DetectedTextObject(TEST_RECT)).right()
-        }
-    }
-
-    private fun GetInputImageUseCase.mock(
-        inputImageError: Throwable? = null,
-        inputImageDelay: Long? = null,
-    ) {
-        coEvery { call(any<String>()) } coAnswers {
-            if (inputImageDelay != null) delay(inputImageDelay)
-            (inputImageError?.left() ?: inputImage.right())
+    private fun ProcessImageUseCase.mock(error: Throwable? = null, processImageDelay: Long?) {
+        coEvery { call(any()) } coAnswers {
+            processImageDelay?.let { delay(it) }
+            error?.left() ?: ImageProcessingResult(
+                detectedTextObjects = listOf(DetectedTextObject(TEST_RECT)),
+                detectedObjects = FAKE_DETECTED_OBJECTS,
+                imageWidth = TEST_WIDTH,
+                imageHeight = TEST_HEIGHT
+            ).right()
         }
     }
 
@@ -615,12 +596,19 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
         coEvery { call(any()) } returns state
     }
 
+    /* ktlint-enable max-line-length */
     companion object {
         const val TEST_DELAY = 2L
         val FAKE_THROWABLE = Throwable("test")
         const val CAMERA_URI_STRING = "camera uri"
         const val SAVED_CAMERA_URI_STRING = "saved camera uri"
         val TEST_RECT = mockk<RectF>()
+        val FAKE_DETECTED_OBJECTS = (0..2).map {
+            DetectedObject(
+                TEST_RECT, "label $it"
+            )
+        }
+
         val INITIAL_STATE = ImageProcessingState()
         const val TEST_HEIGHT = 3840
         const val TEST_WIDTH = 2160

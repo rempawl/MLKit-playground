@@ -7,7 +7,7 @@ import com.rempawl.core.kotlin.UseCase
 import com.rempawl.image.processing.model.DetectedTextObject
 import com.rempawl.image.processing.repository.MLKitDetectionRepository
 
-class TextDetectionUseCase internal constructor(
+internal class TextDetectionUseCase(
     private val mlKitDetectionRepository: MLKitDetectionRepository,
 ) : UseCase<InputImage, EitherResult<List<DetectedTextObject>>> {
 

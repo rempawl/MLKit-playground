@@ -1,6 +1,6 @@
 package com.rempawl.core.viewmodel
 
-//import org.koin.dsl.module
+// import org.koin.dsl.module
 //
-//val coreViewModelModule = module {
-//}
+// val coreViewModelModule = module {
+// }

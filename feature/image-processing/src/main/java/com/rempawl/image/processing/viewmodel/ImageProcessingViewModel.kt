@@ -2,8 +2,6 @@ package com.rempawl.image.processing.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import arrow.core.raise.either
-import com.google.mlkit.vision.common.InputImage
 import com.rempawl.core.kotlin.onError
 import com.rempawl.core.kotlin.onSuccess
 import com.rempawl.core.viewmodel.usecase.GetSavedStateUseCase.SavedStateParam
@@ -12,11 +10,8 @@ import com.rempawl.image.processing.core.GalleryPickerOption
 import com.rempawl.image.processing.core.ImageSourcePickerOption
 import com.rempawl.image.processing.usecase.GetCameraPhotoUriUseCase
 import com.rempawl.image.processing.usecase.GetImageProcessingSavedStateUseCase
-import com.rempawl.image.processing.usecase.GetInputImageUseCase
-import com.rempawl.image.processing.usecase.ObjectDetectionUseCase
+import com.rempawl.image.processing.usecase.ProcessImageUseCase
 import com.rempawl.image.processing.usecase.SaveImageProcessingStateUseCase
-import com.rempawl.image.processing.usecase.TextDetectionUseCase
-import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -29,10 +24,8 @@ import kotlinx.coroutines.launch
 
 // todo add saveable interface and use delegate on BaseViewModel
 class ImageProcessingViewModel(
-    private val objectDetectionUseCase: ObjectDetectionUseCase,
-    private val textDetectionUseCase: TextDetectionUseCase,
+    private val processImageUseCase: ProcessImageUseCase,
     private val getCameraPhotoUriUseCase: GetCameraPhotoUriUseCase,
-    private val getInputImageUseCase: GetInputImageUseCase,
     private val saveStateUseCase: SaveImageProcessingStateUseCase,
     private val getSavedStateUseCase: GetImageProcessingSavedStateUseCase,
 ) : ViewModel() {
@@ -137,51 +130,36 @@ class ImageProcessingViewModel(
     // todo some base progress watcher and withProgress extensions
     private suspend fun processImage(imageUri: String) {
         _state.update { it.copy(isProgressVisible = true) }
-        getInputImageUseCase.call(imageUri).onSuccess { inputImage ->
-            // todo lift logic to StateCase
-            processInputImage(inputImage, imageUri)
-        }.onError {
-            _state.update {
-                it.copy(
-                    showError = true, isProgressVisible = false
-                )
-            } // todo AppError class end different error types
-        }
+        processInputImage(imageUri)
     }
 
-    private suspend fun processInputImage(
-        inputImage: InputImage,
-        imageUri: String,
-    ) = coroutineScope {
-        either {
-            val texts = async { textDetectionUseCase.call(inputImage).bind() }
-            val objects = async { objectDetectionUseCase.call(inputImage).bind() }
-            texts.await() to objects.await()
-        }.onSuccess { (texts, objects) ->
-            _state.update {
-                it.copy(
-                    isProgressVisible = false,
-                    showError = false,
-                    detectedTextObjects = texts,
-                    detectedObjects = objects,
-                    imageState = ImageState(
-                        height = inputImage.height,
-                        width = inputImage.width,
-                        uri = imageUri
+    private suspend fun processInputImage(imageUri: String) = coroutineScope {
+        processImageUseCase.call(imageUri)
+            .onSuccess { (texts, objects, imgWidth, imgHeight) ->
+                _state.update {
+                    it.copy(
+                        isProgressVisible = false,
+                        showError = false,
+                        detectedTextObjects = texts,
+                        detectedObjects = objects,
+                        imageState = ImageState(
+                            height = imgHeight,
+                            width = imgWidth,
+                            uri = imageUri
+                        )
                     )
-                )
+                }
+            }.onError {
+                _state.update {
+                    it.copy(
+                        isProgressVisible = false,
+                        imageState = ImageState(),
+                        showError = true,
+                        detectedTextObjects = emptyList(),
+                        detectedObjects = emptyList()
+                    )
+                }
             }
-        }.onError {
-            _state.update {
-                it.copy(
-                    isProgressVisible = false,
-                    imageState = ImageState(),
-                    showError = true,
-                    detectedTextObjects = emptyList(),
-                    detectedObjects = emptyList()
-                )
-            }
-        }
     }
 
     companion object {

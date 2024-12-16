@@ -2,8 +2,7 @@ plugins {
     id("com.rempawl.shared.kotlin")
 }
 
-
-dependencies{
+dependencies {
     implementation(project(":core:core-kotlin"))
 
     implementation(libs.kotlinx.coroutines.test)

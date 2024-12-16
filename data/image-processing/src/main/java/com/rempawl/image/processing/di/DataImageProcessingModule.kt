@@ -9,6 +9,7 @@ import com.rempawl.image.processing.repository.MLKitDetectionRepositoryImpl
 import com.rempawl.image.processing.usecase.GetCameraPhotoUriUseCase
 import com.rempawl.image.processing.usecase.GetInputImageUseCase
 import com.rempawl.image.processing.usecase.ObjectDetectionUseCase
+import com.rempawl.image.processing.usecase.ProcessImageUseCase
 import com.rempawl.image.processing.usecase.TextDetectionUseCase
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.factoryOf
@@ -25,4 +26,5 @@ val dataImageProcessingModule = module {
     factoryOf(::TextDetectionUseCase)
     factoryOf(::GetInputImageUseCase)
     factoryOf(::GetCameraPhotoUriUseCase)
+    factoryOf(::ProcessImageUseCase)
 }
