@@ -1,0 +1,37 @@
+plugins {
+    id "org.jetbrains.kotlin.jvm"
+    id "com.rempawl.ktlint"
+}
+
+compileKotlin {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_17.toString()
+    }
+}
+
+dependencies {
+    implementation(libs.koin.core)
+
+    implementation(platform(libs.arrow.stack))
+    implementation(libs.arrow.core)
+    implementation(libs.arrow.fx.coroutines)
+
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.mockk)
+    testImplementation(libs.turbine)
+    testImplementation(libs.kotlin.test.junit)
+
+    testImplementation(platform(libs.junit.bom))
+    testImplementation(libs.junit.jupiter)
+    testRuntimeOnly(libs.junit.platform.launcher)
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}

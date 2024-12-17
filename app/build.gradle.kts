@@ -1,25 +1,23 @@
-import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.compose.compiler)
-    id("org.jlleitschuh.gradle.ktlint") version "11.1.0" // todo libs.plugins
-    kotlin("plugin.serialization") version "2.1.0" apply false
-    id("kotlin-parcelize")
-    id("com.google.devtools.ksp") version "2.0.0-1.0.21"
+    alias(libs.plugins.kotlin.parcelize)
+    alias(libs.plugins.android.junit5)
+    alias(libs.plugins.kotlin.ksp)
+    id("com.rempawl.ktlint")
 }
 
 android {
     namespace = "com.rempawl.mlkit_playground"
-    compileSdk = 35
+    compileSdk = libs.versions.compileSDK.get().toInt()
     androidResources {
         noCompress += "tflite"
     }
     defaultConfig {
         applicationId = "com.rempawl.mlkit_playground"
-        minSdk = 27
-        targetSdk = 35
+        minSdk = libs.versions.minSDK.get().toInt()
+        targetSdk = libs.versions.targetSDK.get().toInt()
         versionCode = 1
         versionName = "1.0"
 
@@ -31,7 +29,7 @@ android {
     signingConfigs {
         create("release") {
             this.initWith(signingConfigs.getByName("debug"))
-        // todo
+            // todo
         }
     }
 
@@ -49,7 +47,6 @@ android {
                 "proguard-rules.pro"
             )
             signingConfig = signingConfigs.getByName("release")
-
         }
     }
     compileOptions {
@@ -72,12 +69,6 @@ android {
     }
     ktlint {
         android = true
-        ignoreFailures = true
-        disabledRules.addAll("no-wildcard-imports", "final-newline")
-        reporters {
-            reporter(ReporterType.HTML)
-            reporter(ReporterType.PLAIN)
-        }
     }
 }
 
@@ -87,7 +78,11 @@ composeCompiler {
 }
 
 dependencies {
+    implementation(project(":core:core-kotlin"))
+    implementation(project(":core:core-android"))
+    implementation(project(":core:core-viewmodel"))
     implementation(project(":feature:image-processing"))
+
     implementation(libs.compose.destinations.core)
     ksp(libs.compose.destinations.ksp)
     implementation(libs.compose.destinations.bottomsheet)
@@ -104,20 +99,12 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.compose.android)
     implementation(libs.androidx.runtime.tracing)
 
-    implementation(libs.androidx.ui)
-    implementation(libs.androidx.ui.graphics)
-    implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    implementation(libs.androidx.constraintlayout)
-    implementation(libs.androidx.camera.core)
 
-    implementation(libs.firebase.core)
-    implementation(libs.firebase.ml.model.interpreter)
-    implementation(libs.material)
-    implementation(libs.kotlinx.serialization.json)
-
-    testImplementation(libs.koin.test.junit4)
-    testImplementation(libs.junit)
+    testImplementation(project(":core:test-utils"))
+    testImplementation(platform(libs.junit.bom))
+    testImplementation(libs.junit.jupiter)
+    testRuntimeOnly(libs.junit.platform.launcher)
 
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -130,5 +117,4 @@ dependencies {
 
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-//    debugImplementation(libs.leakcanary.android)
 }

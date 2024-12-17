@@ -1,0 +1,59 @@
+plugins {
+    id "com.android.library"
+    id "org.jetbrains.kotlin.android"
+    id "de.mannodermaus.android-junit5"
+    id "com.rempawl.ktlint"
+}
+
+android {
+    compileSdk = libs.versions.compileSDK.get().toInteger()
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_17.toString()
+    }
+
+    defaultConfig {
+        minSdk = libs.versions.minSDK.get().toInteger()
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles("consumer-rules.pro")
+    }
+    buildTypes {
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    ktlint {
+        android = true
+    }
+
+}
+dependencies {
+    implementation(project(":core:core-kotlin"))
+
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.appcompat)
+
+    implementation(libs.koin.core)
+    implementation(libs.koin.android)
+
+    implementation(platform(libs.arrow.stack))
+    implementation(libs.arrow.core)
+    implementation(libs.arrow.fx.coroutines)
+
+    implementation(libs.kotlinx.coroutines.android)
+
+    testImplementation(project(":core:test-utils"))
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.mockk)
+    testImplementation(libs.junit.jupiter)
+    testImplementation(libs.turbine)
+    testImplementation(libs.kotlin.test.junit)
+    testImplementation(libs.koin.test.junit4)
+}

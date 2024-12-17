@@ -11,7 +11,7 @@ import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.generated.navgraphs.RootNavGraph
 import com.rempawl.mlkit_playground.ui.theme.MlKitplaygroundTheme
 
-
+// todo history of processed images
 // todo compose ui tests
 class MainActivity : ComponentActivity() {
 

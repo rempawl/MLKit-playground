@@ -4,7 +4,7 @@ import android.graphics.RectF
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
-import com.rempawl.image.processing.ImageState
+import com.rempawl.image.processing.viewmodel.ImageState
 
 fun ContentDrawScope.createScaleMatrix(imageState: ImageState): Matrix {
     val widthRatio = size.width / imageState.width.toFloat()

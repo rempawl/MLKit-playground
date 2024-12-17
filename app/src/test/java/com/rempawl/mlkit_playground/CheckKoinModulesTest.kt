@@ -1,14 +1,15 @@
 package com.rempawl.mlkit_playground
 
 import com.rempawl.mlkit_playground.di.appModule
-import org.junit.Test
-import org.koin.test.KoinTest
-import org.koin.test.verify.verify
+import com.rempawl.test.utils.BaseTestKoinModule
+import org.junit.jupiter.api.Test
+import org.koin.core.module.Module
 
-class CheckKoinModulesTest : KoinTest {
+class CheckKoinModulesTest() : BaseTestKoinModule() {
+    override fun provideModule(): Module = appModule
 
     @Test
-    fun checkAllModules() {
-        appModule.verify()
+    fun checkDependencies() {
+        checkKoinDependencies()
     }
 }
