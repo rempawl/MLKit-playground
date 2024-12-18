@@ -1,14 +1,13 @@
-package com.rempawl.image.processing.ui
+package com.rempawl.core.ui
 
 import android.graphics.RectF
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
-import com.rempawl.image.processing.viewmodel.ImageState
 
-fun ContentDrawScope.createScaleMatrix(imageState: ImageState): Matrix {
-    val widthRatio = size.width / imageState.width.toFloat()
-    val heightRatio = size.height / imageState.height.toFloat()
+fun ContentDrawScope.createScaleMatrix(height : Float, width : Float): Matrix {
+    val widthRatio = size.width / width
+    val heightRatio = size.height / height
     return Matrix().apply {
         this.scale(
             x = widthRatio,

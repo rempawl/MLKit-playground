@@ -54,8 +54,10 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
+import com.rempawl.core.ui.createScaleMatrix
+import com.rempawl.core.ui.toComposeRect
 import com.rempawl.image.processing.R
-import com.rempawl.image.processing.core.toPickVisualMediaRequest
+import com.rempawl.bottomsheet.toPickVisualMediaRequest
 import com.rempawl.image.processing.model.DetectedObject
 import com.rempawl.image.processing.model.DetectedTextObject
 import com.rempawl.image.processing.viewmodel.ImageProcessingAction
@@ -251,7 +253,12 @@ private fun ProcessedImage(
             .drawWithCache {
                 onDrawWithContent {
                     drawContent()
-                    drawBlock(createScaleMatrix(imageState))
+                    drawBlock(
+                        createScaleMatrix(
+                            width = imageState.width.toFloat(),
+                            height = imageState.height.toFloat()
+                        )
+                    )
                 }
             }
     )

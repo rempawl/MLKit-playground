@@ -1,4 +1,4 @@
-package com.rempawl.image.processing.ui
+package com.rempawl.core.ui.spacer
 
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
