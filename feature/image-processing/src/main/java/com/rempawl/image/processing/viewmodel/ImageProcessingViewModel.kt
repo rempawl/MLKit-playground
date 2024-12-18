@@ -5,8 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.rempawl.core.kotlin.onError
 import com.rempawl.core.kotlin.onSuccess
 import com.rempawl.core.viewmodel.saveable.Saveable
-import com.rempawl.image.processing.core.GalleryPickerOption
-import com.rempawl.image.processing.core.ImageSourcePickerOption
+import com.rempawl.bottomsheet.GalleryPickerOption
+import com.rempawl.bottomsheet.ImageSourcePickerOption
 import com.rempawl.image.processing.usecase.GetCameraPhotoUriUseCase
 import com.rempawl.image.processing.usecase.ProcessImageUseCase
 import kotlinx.coroutines.channels.BufferOverflow

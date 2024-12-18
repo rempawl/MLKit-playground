@@ -1,5 +1,6 @@
 plugins {
     id("com.rempawl.shared.android")
+    id("com.rempawl.shared.compose")
 }
 
 android {

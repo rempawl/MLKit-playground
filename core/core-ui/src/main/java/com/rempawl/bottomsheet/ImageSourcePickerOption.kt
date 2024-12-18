@@ -1,4 +1,4 @@
-package com.rempawl.image.processing.core
+package com.rempawl.bottomsheet
 
 enum class ImageSourcePickerOption {
     CAMERA,
