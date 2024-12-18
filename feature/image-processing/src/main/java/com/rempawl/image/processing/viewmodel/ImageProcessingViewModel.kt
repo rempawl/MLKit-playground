@@ -4,14 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rempawl.core.kotlin.onError
 import com.rempawl.core.kotlin.onSuccess
-import com.rempawl.core.viewmodel.usecase.GetSavedStateUseCase.SavedStateParam
-import com.rempawl.core.viewmodel.usecase.SaveStateUseCase
+import com.rempawl.core.viewmodel.saveable.Saveable
 import com.rempawl.image.processing.core.GalleryPickerOption
 import com.rempawl.image.processing.core.ImageSourcePickerOption
 import com.rempawl.image.processing.usecase.GetCameraPhotoUriUseCase
-import com.rempawl.image.processing.usecase.GetImageProcessingSavedStateUseCase
 import com.rempawl.image.processing.usecase.ProcessImageUseCase
-import com.rempawl.image.processing.usecase.SaveImageProcessingStateUseCase
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -22,13 +19,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-// todo add saveable interface and use delegate on BaseViewModel
 class ImageProcessingViewModel(
     private val processImageUseCase: ProcessImageUseCase,
     private val getCameraPhotoUriUseCase: GetCameraPhotoUriUseCase,
-    private val saveStateUseCase: SaveImageProcessingStateUseCase,
-    private val getSavedStateUseCase: GetImageProcessingSavedStateUseCase,
-) : ViewModel() {
+    private val saveable: Saveable
+) : ViewModel(), Saveable by saveable {
 
     // todo kotlin 2.x explicit backing field
     private val _state = MutableStateFlow(ImageProcessingState())
@@ -71,8 +66,8 @@ class ImageProcessingViewModel(
             }
 
             ImageProcessingAction.LifecycleStopped -> {
-                saveStateUseCase.call(
-                    SaveStateUseCase.Param(
+                saveable.saveState(
+                    Saveable.SaveStateParam(
                         state = state.value,
                         keyProvider = KEY_SAVED_STATE_PROVIDER,
                         keyState = KEY_STATE
@@ -82,13 +77,12 @@ class ImageProcessingViewModel(
         }
     }
 
-    private suspend fun retrieveSavedState(): ImageProcessingState? = getSavedStateUseCase
-        .call(
-            SavedStateParam(
-                keyProvider = KEY_SAVED_STATE_PROVIDER,
-                keyState = KEY_STATE
-            )
+    private suspend fun retrieveSavedState(): ImageProcessingState? = saveable.getState(
+        Saveable.GetSavedStateParam(
+            keyProvider = KEY_SAVED_STATE_PROVIDER,
+            keyState = KEY_STATE
         )
+    )
 
     private fun hideImageSourcePicker() {
         _state.update {
