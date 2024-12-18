@@ -4,8 +4,7 @@ import android.graphics.RectF
 import app.cash.turbine.test
 import arrow.core.left
 import arrow.core.right
-import com.rempawl.core.viewmodel.usecase.GetSavedStateUseCase
-import com.rempawl.core.viewmodel.usecase.SaveStateUseCase
+import com.rempawl.core.viewmodel.saveable.Saveable
 import com.rempawl.image.processing.core.GalleryPickerOption
 import com.rempawl.image.processing.core.ImageSourcePickerOption.CAMERA
 import com.rempawl.image.processing.core.ImageSourcePickerOption.GALLERY
@@ -13,9 +12,7 @@ import com.rempawl.image.processing.model.DetectedObject
 import com.rempawl.image.processing.model.DetectedTextObject
 import com.rempawl.image.processing.model.ImageProcessingResult
 import com.rempawl.image.processing.usecase.GetCameraPhotoUriUseCase
-import com.rempawl.image.processing.usecase.GetImageProcessingSavedStateUseCase
 import com.rempawl.image.processing.usecase.ProcessImageUseCase
-import com.rempawl.image.processing.usecase.SaveImageProcessingStateUseCase
 import com.rempawl.image.processing.viewmodel.ImageProcessingAction
 import com.rempawl.image.processing.viewmodel.ImageProcessingEffect
 import com.rempawl.image.processing.viewmodel.ImageProcessingState
@@ -39,12 +36,7 @@ import kotlin.test.assertTrue
 /* ktlint-disable max-line-length */
 class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() {
 
-    private val getSavedStateUseCase =
-        mockk<GetImageProcessingSavedStateUseCase>()
-
-    private val saveStateUseCase =
-        mockk<SaveImageProcessingStateUseCase>(relaxUnitFun = true)
-
+    private val saveable = mockk<Saveable>(relaxUnitFun = true)
 
 //    private val inputImage = mockk<InputImage> {
 //        every { height } returns TEST_HEIGHT
@@ -61,15 +53,14 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
         savedState: ImageProcessingState? = null,
         processImageDelay: Long? = null,
     ): ImageProcessingViewModel {
-        getSavedStateUseCase.mock(savedState)
+        saveable.mock(savedState)
         imageProcessingUseCase.mock(textDetectionError, processImageDelay)
 //        getInputImageUseCase.mock(inputImageError, inputImageDelay) todo move test to processimageusecase
         getCameraUriUseCase.mock(cameraUriError)
         val viewModel = ImageProcessingViewModel(
             processImageUseCase = imageProcessingUseCase,
             getCameraPhotoUriUseCase = getCameraUriUseCase,
-            saveStateUseCase = saveStateUseCase,
-            getSavedStateUseCase = getSavedStateUseCase
+            saveable = saveable
         )
         return viewModel
     }
@@ -265,16 +256,16 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
         runTest {
             val viewModel = createSUT()
             viewModel.state.test {
-                getSavedStateUseCase.mock(ImageProcessingState(cameraUri = SAVED_CAMERA_URI_STRING))
+                saveable.mock(ImageProcessingState(cameraUri = SAVED_CAMERA_URI_STRING))
                 coVerifyOnce {
-                    getSavedStateUseCase.call(param = any())
+                    saveable.getState<ImageProcessingState>(param = any())
                 }
                 awaitItem().run { assertEquals("", cameraUri) }
 
                 viewModel.submitAction(ImageProcessingAction.PictureTaken(isImageSaved = true))
 
                 coVerify(exactly = 2) {
-                    getSavedStateUseCase.call(param = any())
+                    saveable.getState<ImageProcessingState>(param = any())
                 }
                 cancelAndIgnoreRemainingEvents()
             }
@@ -301,7 +292,7 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
         runTest {
             val viewModel = createSUT()
             viewModel.state.test {
-                getSavedStateUseCase.mock(state = ImageProcessingState(cameraUri = SAVED_CAMERA_URI_STRING))
+                saveable.mock(state = ImageProcessingState(cameraUri = SAVED_CAMERA_URI_STRING))
                 awaitItem().run {
                     assertEquals("", cameraUri)
                     assertTrue(detectedObjects.isEmpty())
@@ -540,13 +531,13 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
     fun `when lifecycle stopped, then most recent state saved`() = runTest {
         val viewModel = createSUT()
         viewModel.state.test {
-            coVerifyNever { saveStateUseCase.call(any()) }
+            coVerifyNever { saveable.saveState<ImageProcessingState>(any()) }
 
             viewModel.submitAction(ImageProcessingAction.LifecycleStopped)
 
             coVerifyOnce {
-                saveStateUseCase.call(
-                    SaveStateUseCase.Param(
+                saveable.saveState(
+                    Saveable.SaveStateParam(
                         state = expectMostRecentItem(),
                         keyProvider = KEY_SAVED_STATE_PROVIDER,
                         keyState = KEY_STATE
@@ -590,10 +581,10 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
         coEvery { call(Unit) } returns (cameraUriError?.left() ?: CAMERA_URI_STRING.right())
     }
 
-    private fun GetSavedStateUseCase<ImageProcessingState>.mock(
+    private fun Saveable.mock(
         state: ImageProcessingState? = null,
     ) {
-        coEvery { call(any()) } returns state
+        coEvery { getState<ImageProcessingState>(any()) } returns state
     }
 
     /* ktlint-enable max-line-length */

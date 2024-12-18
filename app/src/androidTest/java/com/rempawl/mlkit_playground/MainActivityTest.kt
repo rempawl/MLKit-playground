@@ -40,8 +40,7 @@ class MainActivityTest {
 
         intending(hasAction(MediaStore.ACTION_PICK_IMAGES)).respondWith(
             Instrumentation.ActivityResult(
-                Activity.RESULT_OK,
-                resultData
+                Activity.RESULT_OK, resultData
             )
         )
     }

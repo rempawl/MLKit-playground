@@ -1,6 +1,6 @@
 package com.rempawl.image.processing.viewmodel
 
-import com.rempawl.image.processing.core.Action
+import com.rempawl.core.viewmodel.mvi.Action
 import com.rempawl.image.processing.core.ImageSourcePickerOption
 
 sealed interface ImageProcessingAction : Action {
