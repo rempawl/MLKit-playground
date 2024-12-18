@@ -54,6 +54,8 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
+import com.rempawl.image.processing.R
+import com.rempawl.image.processing.core.toPickVisualMediaRequest
 import com.rempawl.image.processing.model.DetectedObject
 import com.rempawl.image.processing.model.DetectedTextObject
 import com.rempawl.image.processing.viewmodel.ImageProcessingAction
@@ -61,11 +63,10 @@ import com.rempawl.image.processing.viewmodel.ImageProcessingEffect
 import com.rempawl.image.processing.viewmodel.ImageProcessingState
 import com.rempawl.image.processing.viewmodel.ImageProcessingViewModel
 import com.rempawl.image.processing.viewmodel.ImageState
-import com.rempawl.image.processing.R
-import com.rempawl.image.processing.core.toPickVisualMediaRequest
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import org.koin.androidx.compose.navigation.koinNavViewModel
+
 // todo previews!
 
 @Destination<RootGraph>(start = true)
@@ -159,17 +160,18 @@ private fun ImageProcessingScreen(
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center)
                 )
-            }
-            AnimatedVisibility(
-                imageState.uri.isNotEmpty(),
-                enter = slideInVertically() + fadeIn(), // todo take from compositionLocal
-                exit = slideOutVertically()
-            ) {
-                ImagesContent(
-                    imageState = imageState,
-                    detectedObjects = detectedObjects,
-                    detectedTextObjects = detectedTextObjects,
-                )
+            } else {
+                AnimatedVisibility(
+                    imageState.uri.isNotEmpty(),
+                    enter = slideInVertically() + fadeIn(), // todo take from compositionLocal
+                    exit = slideOutVertically()
+                ) {
+                    ImagesContent(
+                        imageState = imageState,
+                        detectedObjects = detectedObjects,
+                        detectedTextObjects = detectedTextObjects,
+                    )
+                }
             }
         }
     }
