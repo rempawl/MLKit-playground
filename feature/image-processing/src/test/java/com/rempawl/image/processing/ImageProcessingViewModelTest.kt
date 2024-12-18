@@ -37,14 +37,7 @@ import kotlin.test.assertTrue
 class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() {
 
     private val saveable = mockk<Saveable>(relaxUnitFun = true)
-
-//    private val inputImage = mockk<InputImage> {
-//        every { height } returns TEST_HEIGHT
-//        every { width } returns TEST_WIDTH todo move test to processimageusecase
-//    }
-
     private val getCameraUriUseCase = mockk<GetCameraPhotoUriUseCase>()
-
     private val imageProcessingUseCase = mockk<ProcessImageUseCase>()
 
     private fun createSUT(
@@ -55,7 +48,6 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
     ): ImageProcessingViewModel {
         saveable.mock(savedState)
         imageProcessingUseCase.mock(textDetectionError, processImageDelay)
-//        getInputImageUseCase.mock(inputImageError, inputImageDelay) todo move test to processimageusecase
         getCameraUriUseCase.mock(cameraUriError)
         val viewModel = ImageProcessingViewModel(
             processImageUseCase = imageProcessingUseCase,
@@ -317,28 +309,6 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
             }
         }
 
-    /*  @Test todo probably not needed after moving to process image usecase
-      fun `given camera picture taken, when input image retrieval fails, then hide progress and show error`() =
-          runTest {
-              val viewModel =
-                  createSUT()
-              viewModel.state.test {
-                  viewModel.submitAction(
-                      ImageProcessingAction.ImageSourcePickerOptionSelected(CAMERA)
-                  )
-                  expectMostRecentItem().run { assertFalse(showError) }
-
-                  viewModel.submitAction(ImageProcessingAction.PictureTaken(isImageSaved = true))
-                  awaitItem().run { assertTrue(isProgressVisible) }
-
-                  advanceTimeBy(TEST_DELAY)
-                  awaitItem().run {
-                      assertTrue(showError)
-                      assertFalse(isProgressVisible)
-                  }
-              }
-          }*/
-
     @Test
     fun `when processing camera photo, then progress is shown and hidden`() =
         runTest {
@@ -419,17 +389,6 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
         }
     }
 
-    /*    @Test todo move to processimageusecase
-        fun `when retrieving input image fails, then no use cases called`() = runTest {
-            val viewModel = createSUT()
-
-            viewModel.submitAction(ImageProcessingAction.GalleryImagePicked("uri"))
-
-            coVerifyNever {
-                imageProcessingUseCase.call(any())
-            }
-        }*/
-
     @Test
     fun `when image selected then progress is shown and uri is set`() = runTest {
         val viewModel = createSUT(processImageDelay = TEST_DELAY)
@@ -507,25 +466,6 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
             )
         }
     }
-
-    /*    @Test todo move to processimageusecase
-        fun `when retrieving input image fails, then error is shown`() = runTest {
-            val viewModel = createSUT()
-            viewModel.state.test {
-                assertEquals(INITIAL_STATE, awaitItem())
-
-                viewModel.submitAction(
-                    ImageProcessingAction.GalleryImagePicked(
-                        "uri",
-                    )
-                )
-
-                assertEquals(
-                    INITIAL_STATE.copy(isProgressVisible = false, showError = true),
-                    awaitItem()
-                )
-            }
-        }*/
 
     @Test
     fun `when lifecycle stopped, then most recent state saved`() = runTest {

@@ -23,7 +23,7 @@ class ImageProcessingViewModel(
     private val processImageUseCase: ProcessImageUseCase,
     private val getCameraPhotoUriUseCase: GetCameraPhotoUriUseCase,
     private val saveable: Saveable
-) : ViewModel(), Saveable by saveable {
+) : ViewModel() {
 
     // todo kotlin 2.x explicit backing field
     private val _state = MutableStateFlow(ImageProcessingState())
