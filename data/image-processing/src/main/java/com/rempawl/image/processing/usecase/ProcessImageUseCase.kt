@@ -2,8 +2,8 @@ package com.rempawl.image.processing.usecase
 
 import arrow.core.flatMap
 import arrow.core.raise.either
-import com.rempawl.core.kotlin.EitherResult
-import com.rempawl.core.kotlin.ResultUseCase
+import com.rempawl.core.kotlin.extensions.EitherResult
+import com.rempawl.core.kotlin.usecase.ResultUseCase
 import com.rempawl.image.processing.model.ImageProcessingResult
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope

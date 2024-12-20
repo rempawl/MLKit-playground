@@ -4,10 +4,11 @@ import android.graphics.RectF
 import app.cash.turbine.test
 import arrow.core.left
 import arrow.core.right
-import com.rempawl.core.viewmodel.saveable.Saveable
 import com.rempawl.bottomsheet.GalleryPickerOption
 import com.rempawl.bottomsheet.ImageSourcePickerOption.CAMERA
 import com.rempawl.bottomsheet.ImageSourcePickerOption.GALLERY
+import com.rempawl.core.kotlin.error.ErrorManagerImpl
+import com.rempawl.core.viewmodel.saveable.Saveable
 import com.rempawl.image.processing.model.DetectedObject
 import com.rempawl.image.processing.model.DetectedTextObject
 import com.rempawl.image.processing.model.ImageProcessingResult
@@ -17,6 +18,7 @@ import com.rempawl.image.processing.viewmodel.ImageProcessingAction
 import com.rempawl.image.processing.viewmodel.ImageProcessingEffect
 import com.rempawl.image.processing.viewmodel.ImageProcessingState
 import com.rempawl.image.processing.viewmodel.ImageProcessingViewModel
+import com.rempawl.image.processing.viewmodel.ImageProcessingViewModel.Companion.DURATION_ERROR
 import com.rempawl.image.processing.viewmodel.ImageProcessingViewModel.Companion.KEY_SAVED_STATE_PROVIDER
 import com.rempawl.image.processing.viewmodel.ImageProcessingViewModel.Companion.KEY_STATE
 import com.rempawl.image.processing.viewmodel.ImageState
@@ -26,6 +28,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -52,7 +55,8 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
         val viewModel = ImageProcessingViewModel(
             processImageUseCase = imageProcessingUseCase,
             getCameraPhotoUriUseCase = getCameraUriUseCase,
-            saveable = saveable
+            saveable = saveable,
+            ErrorManagerImpl()
         )
         return viewModel
     }
@@ -211,7 +215,7 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
         }
 
     @Test
-    fun `when camera option selected and photo uri retrieval fails, then error is shown`() =
+    fun `when camera option selected and photo uri retrieval fails, then error is shown and hidden after duration`() =
         runTest {
             val viewModel = createSUT(cameraUriError = FAKE_THROWABLE)
             viewModel.state.test {
@@ -228,11 +232,13 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
                     assertEquals("", cameraUri)
                     assertTrue(showError)
                 }
+                advanceTimeBy(DURATION_ERROR.inWholeMilliseconds + 1)
+                assertFalse(awaitItem().showError)
             }
         }
 
     @Test
-    fun `when camera picture taken but not saved, then show error`() = runTest {
+    fun `when camera picture taken but not saved, then error shown and hidden after duration`() = runTest {
         val viewModel = createSUT()
         viewModel.state.test {
             awaitItem().run { assertFalse(showError) }
@@ -240,11 +246,13 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
             viewModel.submitAction(ImageProcessingAction.PictureTaken(isImageSaved = false))
 
             awaitItem().run { assertTrue(showError) }
+            advanceTimeBy(DURATION_ERROR.inWholeMilliseconds + 1)
+            assertFalse(awaitItem().showError)
         }
     }
 
     @Test
-    fun `given empty camera uri, when camera picture taken, then uri retrieved from savedState `() =
+    fun `given empty camera uri, when camera picture taken, then uri retrieved from savedState`() =
         runTest {
             val viewModel = createSUT()
             viewModel.state.test {
@@ -264,7 +272,7 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
         }
 
     @Test
-    fun `given empty camera uri and no saved uri, when camera picture taken, then error is shown`() =
+    fun `given empty camera uri and no saved uri, when camera picture taken, then error is shown and hidden after duration`() =
         runTest {
             val viewModel = createSUT()
             viewModel.state.test {
@@ -276,6 +284,8 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
                 viewModel.submitAction(ImageProcessingAction.PictureTaken(isImageSaved = true))
 
                 awaitItem().run { assertTrue(showError) }
+                advanceTimeBy(DURATION_ERROR.inWholeMilliseconds + 1)
+                assertFalse(awaitItem().showError)
             }
         }
 
@@ -447,25 +457,26 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
         }
 
     @Test
-    fun `when error occurs then progress is hidden and error is shown`() = runTest {
-        val viewModel = createSUT(
-            textDetectionError = FAKE_THROWABLE,
-            processImageDelay = TEST_DELAY
-        )
-        viewModel.state.test {
-            assertEquals(INITIAL_STATE, awaitItem())
-
-            viewModel.submitAction(
-                ImageProcessingAction.GalleryImagePicked("uri")
+    fun `when error occurs then progress is hidden and error is shown and hidden after duration`() =
+        runTest {
+            val viewModel = createSUT(
+                textDetectionError = FAKE_THROWABLE,
+                processImageDelay = TEST_DELAY
             )
+            viewModel.state.test {
+                assertEquals(INITIAL_STATE, awaitItem())
 
-            assertEquals(INITIAL_STATE.copy(isProgressVisible = true), awaitItem())
-            assertEquals(
-                INITIAL_STATE.copy(isProgressVisible = false, showError = true),
-                awaitItem()
-            )
+                viewModel.submitAction(
+                    ImageProcessingAction.GalleryImagePicked("uri")
+                )
+                assertEquals(INITIAL_STATE.copy(isProgressVisible = true), awaitItem())
+
+                assertFalse(awaitItem().isProgressVisible)
+                assertTrue(awaitItem().showError)
+                advanceTimeBy(DURATION_ERROR.inWholeMilliseconds + 1)
+                assertFalse(awaitItem().showError)
+            }
         }
-    }
 
     @Test
     fun `when lifecycle stopped, then most recent state saved`() = runTest {

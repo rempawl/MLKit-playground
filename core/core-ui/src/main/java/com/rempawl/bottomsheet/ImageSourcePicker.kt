@@ -37,8 +37,7 @@ fun ImageSourcePickerBottomSheet(
         containerColor = MaterialTheme.colorScheme.background
     ) {
         ImageSourcePicker(
-            pickerOptions = pickerOptions,
-            submitAction = onPickerOptionSelected
+            pickerOptions = pickerOptions, submitAction = onPickerOptionSelected
         )
     }
 }
@@ -75,18 +74,15 @@ private fun ImageSourcePickerOption.getText() = when (this) {
 
 @Composable
 private fun ImageSourcePickerOption.Content(submitAction: (ImageSourcePickerOption) -> Unit) {
-    Button(
-        modifier = androidx.compose.ui.Modifier
-            .fillMaxWidth() // todo landscape
-            .height(48.dp),
-        onClick = { submitAction(this) }
-    ) {
+    Button(modifier = Modifier
+        .fillMaxWidth() // todo landscape
+        .height(48.dp), onClick = { submitAction(this) }) {
         Icon(
-            modifier = androidx.compose.ui.Modifier.size(24.dp),
+            modifier = Modifier.size(24.dp),
             painter = this@Content.getIconPainter(),
             contentDescription = null
         )
-        Spacer(androidx.compose.ui.Modifier.width(12.dp))
+        Spacer(Modifier.width(12.dp))
         Text(text = getText())
     }
 }
