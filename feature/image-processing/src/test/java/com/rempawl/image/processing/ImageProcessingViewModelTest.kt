@@ -5,9 +5,9 @@ import app.cash.turbine.test
 import arrow.core.left
 import arrow.core.right
 import com.rempawl.core.viewmodel.saveable.Saveable
-import com.rempawl.image.processing.core.GalleryPickerOption
-import com.rempawl.image.processing.core.ImageSourcePickerOption.CAMERA
-import com.rempawl.image.processing.core.ImageSourcePickerOption.GALLERY
+import com.rempawl.bottomsheet.GalleryPickerOption
+import com.rempawl.bottomsheet.ImageSourcePickerOption.CAMERA
+import com.rempawl.bottomsheet.ImageSourcePickerOption.GALLERY
 import com.rempawl.image.processing.model.DetectedObject
 import com.rempawl.image.processing.model.DetectedTextObject
 import com.rempawl.image.processing.model.ImageProcessingResult
