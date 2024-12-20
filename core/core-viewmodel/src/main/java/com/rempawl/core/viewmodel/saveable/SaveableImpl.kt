@@ -5,7 +5,7 @@ import android.os.Parcelable
 import androidx.core.os.bundleOf
 import androidx.lifecycle.SavedStateHandle
 import com.rempawl.core.android.ParcelableUtils
-import com.rempawl.core.kotlin.DispatchersProvider
+import com.rempawl.core.kotlin.dispatcher.DispatchersProvider
 import kotlinx.coroutines.withContext
 
 internal class SaveableImpl(

@@ -6,8 +6,8 @@ import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import arrow.core.Either
 import com.google.mlkit.vision.common.InputImage
-import com.rempawl.core.kotlin.DispatchersProvider
-import com.rempawl.core.kotlin.EitherResult
+import com.rempawl.core.kotlin.dispatcher.DispatchersProvider
+import com.rempawl.core.kotlin.extensions.EitherResult
 import kotlinx.coroutines.withContext
 import java.io.File
 

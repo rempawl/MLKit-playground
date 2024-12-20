@@ -1,52 +1,46 @@
 package com.rempawl.image.processing.viewmodel
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.rempawl.core.kotlin.onError
-import com.rempawl.core.kotlin.onSuccess
-import com.rempawl.core.viewmodel.saveable.Saveable
+import arrow.core.Either
 import com.rempawl.bottomsheet.GalleryPickerOption
 import com.rempawl.bottomsheet.ImageSourcePickerOption
+import com.rempawl.core.kotlin.error.AppError
+import com.rempawl.core.kotlin.error.ErrorManager
+import com.rempawl.core.kotlin.error.UIError
+import com.rempawl.core.kotlin.error.toUIError
+import com.rempawl.core.kotlin.extensions.onError
+import com.rempawl.core.kotlin.extensions.onSuccess
+import com.rempawl.core.viewmodel.mvi.BaseMVIViewModel
+import com.rempawl.core.viewmodel.saveable.Saveable
 import com.rempawl.image.processing.usecase.GetCameraPhotoUriUseCase
 import com.rempawl.image.processing.usecase.ProcessImageUseCase
-import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.seconds
 
 class ImageProcessingViewModel(
     private val processImageUseCase: ProcessImageUseCase,
     private val getCameraPhotoUriUseCase: GetCameraPhotoUriUseCase,
-    private val saveable: Saveable
-) : ViewModel() {
+    private val saveable: Saveable,
+    errorManager: ErrorManager
+) : BaseMVIViewModel<ImageProcessingState, ImageProcessingAction, ImageProcessingEffect>(
+    errorManager,
+    ImageProcessingState()
+) {
 
-    // todo kotlin 2.x explicit backing field
-    private val _state = MutableStateFlow(ImageProcessingState())
-    val state: StateFlow<ImageProcessingState> get() = _state.asStateFlow()
-
-    // todo BaseMviViewmodel for state & effects & submit action
-    private val _effects = MutableSharedFlow<ImageProcessingEffect>(
-        extraBufferCapacity = 5, onBufferOverflow = BufferOverflow.DROP_OLDEST
-    )
-    val effects = _effects.asSharedFlow()
-
-    init {
-        viewModelScope.launch {
-            retrieveSavedState()?.let { savedState -> _state.update { savedState } }
-        }
+    override fun doOnStateSubscription(): suspend () -> Unit = {
+        retrieveSavedState()?.let { savedState -> setState { savedState } }
     }
 
-    fun submitAction(action: ImageProcessingAction) = viewModelScope.launch {
+    override fun handleError(
+        appError: Either<Unit, AppError>,
+        state: ImageProcessingState
+    ): ImageProcessingState = state.copy(showError = appError.isRight())
+
+    override suspend fun handleActions(action: ImageProcessingAction) {
         when (action) {
             is ImageProcessingAction.GalleryImagePicked -> processImage(imageUri = action.imageUri)
 
-            ImageProcessingAction.SelectImageFabClicked -> _state.update {
-                it.copy(
+            ImageProcessingAction.SelectImageFabClicked -> setState {
+                copy(
                     sourcePickerOptions = listOf(
                         ImageSourcePickerOption.CAMERA, ImageSourcePickerOption.GALLERY
                     )
@@ -85,53 +79,50 @@ class ImageProcessingViewModel(
     )
 
     private fun hideImageSourcePicker() {
-        _state.update {
-            it.copy(sourcePickerOptions = emptyList())
+        setState {
+            copy(sourcePickerOptions = emptyList())
         }
     }
 
     private suspend fun tryOpenCamera() {
-        getCameraPhotoUriUseCase.call(Unit).onSuccess { uri ->
-            _state.update { it.copy(cameraUri = uri) }
-            setEffect(ImageProcessingEffect.TakePicture(uri))
-        }.onError {
-            _state.update { it.copy(showError = true) } // todo UriError
-        }
+        getCameraPhotoUriUseCase.call(Unit)
+            .onSuccess { uri ->
+                setState { copy(cameraUri = uri) }
+                setEffect { ImageProcessingEffect.TakePicture(uri) }
+            }.onError {
+                addError(it.toUIError(DURATION_ERROR))
+            }
     }
 
     private suspend fun handlePictureTakenResult(action: ImageProcessingAction.PictureTaken) {
         val cameraUri = state.value.cameraUri.ifEmpty {
             retrieveSavedState()?.cameraUri.orEmpty()
         }
-
         if (action.isImageSaved && cameraUri.isNotEmpty()) {
             processImage(imageUri = cameraUri)
         } else {
-            _state.update { it.copy(showError = true) }
+            addError(UIError(null, DURATION_ERROR)) // todo DefaultError interface
         }
     }
 
     private suspend fun openGallery() {
-        setEffect(
+        setEffect {
             ImageProcessingEffect.OpenGallery(GalleryPickerOption.IMAGE_ONLY)
-        )
+        }
     }
 
-    private suspend fun setEffect(effect: ImageProcessingEffect) {
-        _effects.emit(effect) // todo base viewmodel
-    }
 
     // todo some base progress watcher and withProgress extensions
     private suspend fun processImage(imageUri: String) {
-        _state.update { it.copy(isProgressVisible = true) }
+        setState { copy(isProgressVisible = true) }
         processInputImage(imageUri)
     }
 
     private suspend fun processInputImage(imageUri: String) = coroutineScope {
         processImageUseCase.call(imageUri)
             .onSuccess { (texts, objects, imgWidth, imgHeight) ->
-                _state.update {
-                    it.copy(
+                setState {
+                    copy(
                         isProgressVisible = false,
                         showError = false,
                         detectedTextObjects = texts,
@@ -144,14 +135,9 @@ class ImageProcessingViewModel(
                     )
                 }
             }.onError {
-                _state.update {
-                    it.copy(
-                        isProgressVisible = false,
-                        imageState = ImageState(),
-                        showError = true,
-                        detectedTextObjects = emptyList(),
-                        detectedObjects = emptyList()
-                    )
+                addError(it.toUIError(DURATION_ERROR))
+                setState {
+                    copy(isProgressVisible = false)
                 }
             }
     }
@@ -160,5 +146,6 @@ class ImageProcessingViewModel(
         private val className by lazy { this::class.java.name }
         internal val KEY_STATE = "${className}_state"
         internal val KEY_SAVED_STATE_PROVIDER = "${className}_state_provider"
+        val DURATION_ERROR = 5.seconds
     }
 }

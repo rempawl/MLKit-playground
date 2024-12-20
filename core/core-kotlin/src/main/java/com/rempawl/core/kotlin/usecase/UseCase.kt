@@ -1,5 +1,6 @@
-package com.rempawl.core.kotlin
+package com.rempawl.core.kotlin.usecase
 
+import com.rempawl.core.kotlin.extensions.EitherResult
 import kotlinx.coroutines.flow.Flow
 
 interface UseCase<Param, Result> {

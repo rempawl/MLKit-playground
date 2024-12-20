@@ -2,7 +2,7 @@ package com.rempawl.image.processing.repository
 
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.objects.DetectedObject
-import com.rempawl.core.kotlin.EitherResult
+import com.rempawl.core.kotlin.extensions.EitherResult
 import com.rempawl.image.processing.usecase.TextBlockWrapper
 
 interface MLKitDetectionRepository {

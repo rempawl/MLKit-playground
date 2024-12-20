@@ -1,4 +1,5 @@
-import com.rempawl.core.kotlin.DispatchersProvider
+package com.rempawl.core.kotlin.dispatcher
+
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 
