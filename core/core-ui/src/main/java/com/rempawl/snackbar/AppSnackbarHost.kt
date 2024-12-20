@@ -8,7 +8,7 @@ import androidx.compose.ui.res.stringResource
 import com.rempawl.core.ui.R
 
 @Composable
-private fun AppSnackbarHost(
+fun AppSnackbarHost(
     snackbarHostState: SnackbarHostState,
     showError: Boolean // todo AppError interface subclasses
 ) {

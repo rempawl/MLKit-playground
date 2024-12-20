@@ -15,7 +15,13 @@ import com.rempawl.image.processing.usecase.GetCameraPhotoUriUseCase
 import com.rempawl.image.processing.usecase.ProcessImageUseCase
 import kotlinx.coroutines.coroutineScope
 import kotlin.time.Duration.Companion.seconds
-
+/**
+ * ViewModel for image processing.
+ *
+ * This ViewModel manages the state and logic for image processing operations,
+ * including selecting an image source, taking pictures, processing images,
+ * and handling errors. It follows the MVI architecture pattern.
+ */
 class ImageProcessingViewModel(
     private val processImageUseCase: ProcessImageUseCase,
     private val getCameraPhotoUriUseCase: GetCameraPhotoUriUseCase,

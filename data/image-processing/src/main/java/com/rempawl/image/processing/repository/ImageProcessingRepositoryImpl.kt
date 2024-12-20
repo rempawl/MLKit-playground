@@ -16,6 +16,15 @@ internal class ImageProcessingRepositoryImpl(
     private val context: Context,
 ) : ImageProcessingRepository {
 
+    /**
+     * Gets the URI for a temporary camera file.
+     *
+     * This method creates a temporary file in the app's cache directory
+     * and returns its URI.
+     *
+     * @return An `EitherResult` containing the URI if successful,
+     * or an error if the operation fails.
+     */
     override suspend fun getTmpCameraFileUriString(): EitherResult<String> =
         getTmpCameraFileUri().map { it.toString() }
 
