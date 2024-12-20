@@ -1,6 +1,5 @@
 package com.rempawl.image.processing.ui
 
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
 import androidx.activity.result.contract.ActivityResultContracts.TakePicture
@@ -20,6 +19,8 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -54,10 +55,10 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
+import com.rempawl.bottomsheet.toPickVisualMediaRequest
 import com.rempawl.core.ui.createScaleMatrix
 import com.rempawl.core.ui.toComposeRect
 import com.rempawl.image.processing.R
-import com.rempawl.bottomsheet.toPickVisualMediaRequest
 import com.rempawl.image.processing.model.DetectedObject
 import com.rempawl.image.processing.model.DetectedTextObject
 import com.rempawl.image.processing.viewmodel.ImageProcessingAction
@@ -95,6 +96,7 @@ private fun ImagesScreen(
     state: ImageProcessingState,
     submitAction: (ImageProcessingAction) -> Unit,
 ) {
+    val snackbarHostState = remember { SnackbarHostState() }
     Scaffold(
         topBar = { ToolbarContent() },
         floatingActionButton = {
@@ -103,7 +105,7 @@ private fun ImagesScreen(
             }
         },
         snackbarHost = {
-            // todo show snackbar
+            AppSnackbarHost(snackbarHostState, state.showError)
         },
 
         modifier = Modifier
@@ -114,14 +116,6 @@ private fun ImagesScreen(
         ImageProcessingScreen(
             state, modifier = Modifier.padding(paddingValues)
         )
-        if (state.showError) {
-            // todo snackbar & error clearing after specified time
-            Toast.makeText(
-                LocalContext.current,
-                stringResource(R.string.error_generic),
-                Toast.LENGTH_SHORT
-            ).show()
-        }
         if (state.isSourcePickerVisible) {
             ImageSourcePickerBottomSheet(submitAction, state)
         }
