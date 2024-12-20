@@ -22,7 +22,17 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.seconds
 
-
+/**
+ * Base class for MVI ViewModels.
+ *
+ * This class provides a foundation for implementing the Model-View-Intent (MVI)
+ * architecture pattern in project viewmodels. It manages state, side effects,
+ * and error handling.
+ *
+ * @param <STATE> The type of the UI state.
+ * @param <ACTION> The type of the user action.
+ * @param <EFFECT> The type of the side effect.
+ */
 abstract class BaseMVIViewModel<STATE, ACTION : Action, EFFECT : Effect>(
     private val errorManager: ErrorManager, initialState: STATE,
 ) : ViewModel() {
@@ -46,7 +56,10 @@ abstract class BaseMVIViewModel<STATE, ACTION : Action, EFFECT : Effect>(
             handleActions(action)
         }
     }
-
+    /**
+     * Adds an error to the error manager.
+     * @param error The UI error to be added.
+     */
     protected fun addError(error: UIError) {
         viewModelScope.launch {
             errorManager.addError(error)
@@ -61,13 +74,40 @@ abstract class BaseMVIViewModel<STATE, ACTION : Action, EFFECT : Effect>(
         _effects.emit(currentState.reducer())
     }
 
+    /**
+     * Handles actions submitted to the ViewModel.
+     *
+     * This method should be overridden by subclasses to implement the core logic
+     * of processing actions and updating the state.
+     *
+     * @param action The action to be handled.
+     */
     protected abstract suspend fun handleActions(action: ACTION)
+
+    /**
+     * Handles errors reported by the error manager.
+     *
+     * This method should be overridden by subclasses to implement error handling
+     * logic, such as updating the state to display an error message.
+     *
+     * @param appError The application error to be handled.
+     * @param state    The current state of the ViewModel.
+     * @return The new state of the ViewModel after handling the error.
+     */
     protected abstract fun handleError(appError: Either<Unit, AppError>, state: STATE): STATE
+
+    /**
+     * Performs actions when the state flow is subscribed to.
+     *
+     * This method can be overridden by subclasses to perform initialization
+     * or setup tasks when the state flow is first observed.
+     *
+     * @return A suspend function that will be executed when the state flow is subscribed to.
+     */
     protected open fun doOnStateSubscription(): suspend () -> Unit = { }
 
 
     private fun onError(error: Either<Unit, AppError>) {
         _state.update { currentValue -> handleError(appError = error, state = currentValue) }
     }
-
 }

@@ -24,6 +24,14 @@ import androidx.compose.ui.unit.dp
 import com.rempawl.core.ui.R
 import com.rempawl.core.ui.spacer.HeightSpacer
 
+/**
+ * A bottom sheet that allows the user to select an image source.
+ *
+ * This composable displays a modal bottom sheet with options for selecting an image source,
+ * such as the camera or gallery. When the user selects an option, the `onPickerOptionSelected`
+ * callback is invoked with the chosen [ImageSourcePickerOption]. The bottom sheet can be
+ * dismissed by calling the `onDismiss` callback.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ImageSourcePickerBottomSheet(
