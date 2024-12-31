@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.WhileSubscribed
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onSubscription
@@ -39,10 +38,9 @@ abstract class BaseMVIViewModel<STATE, ACTION : Action, EFFECT : Effect>(
 
     private val _state = MutableStateFlow(initialState)
     val state: StateFlow<STATE> = _state
-        .asStateFlow()
         .onSubscription {
             errorManager.errors.onEach { onError(it) }.launchIn(viewModelScope)
-            doOnStateSubscription().invoke()
+            viewModelScope.launch { doOnStateSubscription().invoke() }
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5.seconds), initialState)
 
@@ -56,6 +54,7 @@ abstract class BaseMVIViewModel<STATE, ACTION : Action, EFFECT : Effect>(
             handleActions(action)
         }
     }
+
     /**
      * Adds an error to the error manager.
      * @param error The UI error to be added.
