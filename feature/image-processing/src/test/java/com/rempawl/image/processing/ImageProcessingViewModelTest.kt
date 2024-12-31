@@ -52,13 +52,12 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
         saveable.mock(savedState)
         imageProcessingUseCase.mock(textDetectionError, processImageDelay)
         getCameraUriUseCase.mock(cameraUriError)
-        val viewModel = ImageProcessingViewModel(
+        return ImageProcessingViewModel(
             processImageUseCase = imageProcessingUseCase,
             getCameraPhotoUriUseCase = getCameraUriUseCase,
             saveable = saveable,
-            ErrorManagerImpl()
+            errorManager = ErrorManagerImpl()
         )
-        return viewModel
     }
 
     @Test
@@ -238,18 +237,19 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
         }
 
     @Test
-    fun `when camera picture taken but not saved, then error shown and hidden after duration`() = runTest {
-        val viewModel = createSUT()
-        viewModel.state.test {
-            awaitItem().run { assertFalse(showError) }
+    fun `when camera picture taken but not saved, then error shown and hidden after duration`() =
+        runTest {
+            val viewModel = createSUT()
+            viewModel.state.test {
+                awaitItem().run { assertFalse(showError) }
 
-            viewModel.submitAction(ImageProcessingAction.PictureTaken(isImageSaved = false))
+                viewModel.submitAction(ImageProcessingAction.PictureTaken(isImageSaved = false))
 
-            awaitItem().run { assertTrue(showError) }
-            advanceTimeBy(DURATION_ERROR.inWholeMilliseconds + 1)
-            assertFalse(awaitItem().showError)
+                awaitItem().run { assertTrue(showError) }
+                advanceTimeBy(DURATION_ERROR.inWholeMilliseconds + 1)
+                assertFalse(awaitItem().showError)
+            }
         }
-    }
 
     @Test
     fun `given empty camera uri, when camera picture taken, then uri retrieved from savedState`() =

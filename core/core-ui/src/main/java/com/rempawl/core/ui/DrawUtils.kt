@@ -4,6 +4,7 @@ import android.graphics.RectF
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
+
 /**
  * Creates a scale matrix to fit content within the ContentDrawScope's bounds.
  *
