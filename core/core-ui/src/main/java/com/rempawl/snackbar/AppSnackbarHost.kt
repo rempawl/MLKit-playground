@@ -4,17 +4,15 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.res.stringResource
-import com.rempawl.core.ui.R
+import com.rempawl.core.kotlin.error.UIError
 
 @Composable
 fun AppSnackbarHost(
     snackbarHostState: SnackbarHostState,
-    showError: Boolean // todo AppError interface subclasses
+    error: UIError?,
 ) {
-    val message = stringResource(R.string.error_generic) // todo getErrorMessage handler
-    LaunchedEffect(showError) {
-        if (showError) snackbarHostState.showSnackbar(message)
+    LaunchedEffect(error) {
+        error?.let { snackbarHostState.showSnackbar(error.message) }
     }
     SnackbarHost(hostState = snackbarHostState)
 }

@@ -36,8 +36,7 @@ internal class ImageProcessingRepositoryImpl(
             Either.catch {
                 // todo file provider in core-android
                 val cacheDir = File(context.cacheDir, IMAGES_CACHE_DIR)
-                if (!cacheDir.exists())
-                    cacheDir.mkdir()
+                if (!cacheDir.exists()) cacheDir.mkdir()
                 val tmpFile = File.createTempFile("tmp_image_file", ".png", cacheDir)
                     .apply { createNewFile() }
 

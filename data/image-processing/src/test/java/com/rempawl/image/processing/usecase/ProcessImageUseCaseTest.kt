@@ -123,7 +123,6 @@ class ProcessImageUseCaseTest : BaseCoroutineTest() {
 
     private fun ObjectDetectionUseCase.mock(error: Throwable? = null) {
         coEvery { call(any()) } answers { error?.left() ?: FAKE_DETECTED_OBJECTS.right() }
-
     }
 
     private fun TextDetectionUseCase.mock(error: Throwable?) {
@@ -134,8 +133,6 @@ class ProcessImageUseCaseTest : BaseCoroutineTest() {
 
     private fun GetInputImageUseCase.mock(throwable: Throwable? = null) {
         coEvery { call(any()) } answers { throwable?.left() ?: inputImage.right() }
-
-
     }
 
     companion object {
@@ -149,5 +146,4 @@ class ProcessImageUseCaseTest : BaseCoroutineTest() {
         const val TEST_HEIGHT = 3840
         const val TEST_WIDTH = 2160
     }
-
 }
