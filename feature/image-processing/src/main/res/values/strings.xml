@@ -3,4 +3,5 @@
     <string name="title_topbar">Select image to run object detection</string>
     <string name="title_objects_section">Detected objects</string>
     <string name="title_texts_section">Detected texts</string>
+    <string name="error_image_not_saved">Failed to save camera image</string>
 </resources>

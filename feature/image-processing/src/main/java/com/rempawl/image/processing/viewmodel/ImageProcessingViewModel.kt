@@ -3,20 +3,19 @@ package com.rempawl.image.processing.viewmodel
 import arrow.core.Either
 import com.rempawl.bottomsheet.GalleryPickerOption
 import com.rempawl.bottomsheet.ImageSourcePickerOption
-import com.rempawl.core.kotlin.error.AppError
 import com.rempawl.core.kotlin.error.ErrorManager
 import com.rempawl.core.kotlin.error.UIError
 import com.rempawl.core.kotlin.error.toUIError
+import com.rempawl.core.kotlin.error.toUiError
 import com.rempawl.core.kotlin.extensions.onError
 import com.rempawl.core.kotlin.extensions.onSuccess
 import com.rempawl.core.viewmodel.mvi.BaseMVIViewModel
 import com.rempawl.core.viewmodel.saveable.Saveable
+import com.rempawl.image.processing.error.ImageNotSavedError
+import com.rempawl.image.processing.error.ImageProcessingErrorMessageProvider
 import com.rempawl.image.processing.usecase.GetCameraPhotoUriUseCase
 import com.rempawl.image.processing.usecase.ProcessImageUseCase
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.asFlow
-import kotlin.time.Duration.Companion.seconds
 
 /**
  * ViewModel for image processing.
@@ -29,6 +28,7 @@ class ImageProcessingViewModel(
     private val processImageUseCase: ProcessImageUseCase,
     private val getCameraPhotoUriUseCase: GetCameraPhotoUriUseCase,
     private val saveable: Saveable,
+    private val errorMessageProvider: ImageProcessingErrorMessageProvider,
     errorManager: ErrorManager
 ) : BaseMVIViewModel<ImageProcessingState, ImageProcessingAction, ImageProcessingEffect>(
     errorManager,
@@ -40,9 +40,9 @@ class ImageProcessingViewModel(
     }
 
     override fun handleError(
-        appError: Either<Unit, AppError>,
+        appError: Either<Unit, UIError>,
         state: ImageProcessingState
-    ): ImageProcessingState = state.copy(showError = appError.isRight())
+    ): ImageProcessingState = state.copy(error = appError.getOrNull())
 
     override suspend fun handleActions(action: ImageProcessingAction) {
         when (action) {
@@ -99,7 +99,7 @@ class ImageProcessingViewModel(
                 setState { copy(cameraUri = uri) }
                 setEffect { ImageProcessingEffect.TakePicture(uri) }
             }.onError {
-                addError(it.toUIError(DURATION_ERROR))
+                addError(it.toUIError(errorMessageProvider)) // todo error subclass
             }
     }
 
@@ -110,7 +110,9 @@ class ImageProcessingViewModel(
         if (action.isImageSaved && cameraUri.isNotEmpty()) {
             processImage(imageUri = cameraUri)
         } else {
-            addError(UIError(null, DURATION_ERROR)) // todo DefaultError interface
+            addError(
+                ImageNotSavedError.toUiError(errorMessageProvider)
+            )
         }
     }
 
@@ -119,7 +121,6 @@ class ImageProcessingViewModel(
             ImageProcessingEffect.OpenGallery(GalleryPickerOption.IMAGE_ONLY)
         }
     }
-
 
     // todo some base progress watcher and withProgress extensions
     private suspend fun processImage(imageUri: String) {
@@ -133,7 +134,6 @@ class ImageProcessingViewModel(
                 setState {
                     copy(
                         isProgressVisible = false,
-                        showError = false,
                         detectedTextObjects = texts,
                         detectedObjects = objects,
                         imageState = ImageState(
@@ -144,7 +144,7 @@ class ImageProcessingViewModel(
                     )
                 }
             }.onError {
-                addError(it.toUIError(DURATION_ERROR))
+                addError(it.toUIError(errorMessageProvider)) // todo error subclass
                 setState {
                     copy(isProgressVisible = false)
                 }
@@ -155,6 +155,5 @@ class ImageProcessingViewModel(
         private val className by lazy { this::class.java.name }
         internal val KEY_STATE = "${className}_state"
         internal val KEY_SAVED_STATE_PROVIDER = "${className}_state_provider"
-        val DURATION_ERROR = 5.seconds
     }
 }

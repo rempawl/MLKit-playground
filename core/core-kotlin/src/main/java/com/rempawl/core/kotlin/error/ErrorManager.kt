@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.Flow
 
 
 interface ErrorManager {
-    val errors: Flow<Either<Unit, AppError>>
+    val errors: Flow<Either<Unit, UIError>>
     suspend fun addError(error: UIError)
     suspend fun removeCurrentError()
 

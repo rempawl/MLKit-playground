@@ -3,7 +3,6 @@ package com.rempawl.core.viewmodel.mvi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import arrow.core.Either
-import com.rempawl.core.kotlin.error.AppError
 import com.rempawl.core.kotlin.error.ErrorManager
 import com.rempawl.core.kotlin.error.UIError
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -33,16 +32,15 @@ import kotlin.time.Duration.Companion.seconds
  * @param <EFFECT> The type of the side effect.
  */
 abstract class BaseMVIViewModel<STATE, ACTION : Action, EFFECT : Effect>(
-    private val errorManager: ErrorManager, initialState: STATE,
+    private val errorManager: ErrorManager,
+    initialState: STATE,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(initialState)
-    val state: StateFlow<STATE> = _state
-        .onSubscription {
-            errorManager.errors.onEach { onError(it) }.launchIn(viewModelScope)
-            viewModelScope.launch { doOnStateSubscription().invoke() }
-        }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5.seconds), initialState)
+    val state: StateFlow<STATE> = _state.onSubscription {
+        errorManager.errors.onEach { onError(it) }.launchIn(viewModelScope)
+        viewModelScope.launch { doOnStateSubscription().invoke() }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5.seconds), initialState)
 
     protected val currentState get() = _state.value
 
@@ -93,7 +91,7 @@ abstract class BaseMVIViewModel<STATE, ACTION : Action, EFFECT : Effect>(
      * @param state    The current state of the ViewModel.
      * @return The new state of the ViewModel after handling the error.
      */
-    protected abstract fun handleError(appError: Either<Unit, AppError>, state: STATE): STATE
+    protected abstract fun handleError(appError: Either<Unit, UIError>, state: STATE): STATE
 
     /**
      * Performs actions when the state flow is subscribed to.
@@ -105,8 +103,7 @@ abstract class BaseMVIViewModel<STATE, ACTION : Action, EFFECT : Effect>(
      */
     protected open fun doOnStateSubscription(): suspend () -> Unit = { }
 
-
-    private fun onError(error: Either<Unit, AppError>) {
+    private fun onError(error: Either<Unit, UIError>) {
         _state.update { currentValue -> handleError(appError = error, state = currentValue) }
     }
 }

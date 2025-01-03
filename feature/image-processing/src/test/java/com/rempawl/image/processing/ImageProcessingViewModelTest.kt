@@ -7,8 +7,11 @@ import arrow.core.right
 import com.rempawl.bottomsheet.GalleryPickerOption
 import com.rempawl.bottomsheet.ImageSourcePickerOption.CAMERA
 import com.rempawl.bottomsheet.ImageSourcePickerOption.GALLERY
+import com.rempawl.core.kotlin.error.DURATION_ERROR_LONG
 import com.rempawl.core.kotlin.error.ErrorManagerImpl
 import com.rempawl.core.viewmodel.saveable.Saveable
+import com.rempawl.image.processing.error.ImageNotSavedError
+import com.rempawl.image.processing.error.ImageProcessingErrorMessageProvider
 import com.rempawl.image.processing.model.DetectedObject
 import com.rempawl.image.processing.model.DetectedTextObject
 import com.rempawl.image.processing.model.ImageProcessingResult
@@ -18,15 +21,19 @@ import com.rempawl.image.processing.viewmodel.ImageProcessingAction
 import com.rempawl.image.processing.viewmodel.ImageProcessingEffect
 import com.rempawl.image.processing.viewmodel.ImageProcessingState
 import com.rempawl.image.processing.viewmodel.ImageProcessingViewModel
-import com.rempawl.image.processing.viewmodel.ImageProcessingViewModel.Companion.DURATION_ERROR
 import com.rempawl.image.processing.viewmodel.ImageProcessingViewModel.Companion.KEY_SAVED_STATE_PROVIDER
 import com.rempawl.image.processing.viewmodel.ImageProcessingViewModel.Companion.KEY_STATE
 import com.rempawl.image.processing.viewmodel.ImageState
 import com.rempawl.test.utils.coVerifyNever
 import com.rempawl.test.utils.coVerifyOnce
+import com.rempawl.test.utils.verifyNever
+import com.rempawl.test.utils.verifyOnce
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
+import io.mockk.spyk
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runTest
@@ -34,14 +41,21 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /* ktlint-disable max-line-length */
+@ExperimentalCoroutinesApi
 class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() {
 
     private val saveable = mockk<Saveable>(relaxUnitFun = true)
     private val getCameraUriUseCase = mockk<GetCameraPhotoUriUseCase>()
     private val imageProcessingUseCase = mockk<ProcessImageUseCase>()
+    private val errorMessageProvider = mockk<ImageProcessingErrorMessageProvider>() {
+        every { getErrorMessageFor(ImageNotSavedError) } returns "error"
+    }
+    private val errorManager = spyk(ErrorManagerImpl())
 
     private fun createSUT(
         textDetectionError: Throwable? = null,
@@ -56,7 +70,8 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
             processImageUseCase = imageProcessingUseCase,
             getCameraPhotoUriUseCase = getCameraUriUseCase,
             saveable = saveable,
-            errorManager = ErrorManagerImpl()
+            errorMessageProvider = errorMessageProvider,
+            errorManager = errorManager
         )
     }
 
@@ -218,7 +233,7 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
         runTest {
             val viewModel = createSUT(cameraUriError = FAKE_THROWABLE)
             viewModel.state.test {
-                awaitItem().run { assertFalse(showError) }
+                awaitItem().run { assertNull(error) }
                 coVerifyNever { getCameraUriUseCase.call(Unit) }
                 viewModel.submitAction(
                     ImageProcessingAction.ImageSourcePickerOptionSelected(
@@ -229,25 +244,29 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
                 coVerifyOnce { getCameraUriUseCase.call(Unit) }
                 awaitItem().run {
                     assertEquals("", cameraUri)
-                    assertTrue(showError)
+                    assertNotNull(error)
                 }
-                advanceTimeBy(DURATION_ERROR.inWholeMilliseconds + 1)
-                assertFalse(awaitItem().showError)
+                advanceTimeBy(DURATION_ERROR_LONG.inWholeMilliseconds + 1)
+                assertNull(awaitItem().error)
             }
         }
 
     @Test
-    fun `when camera picture taken but not saved, then error shown and hidden after duration`() =
+    fun `when camera picture taken but not saved, then ImageNotSaved error shown and hidden after duration`() =
         runTest {
             val viewModel = createSUT()
             viewModel.state.test {
-                awaitItem().run { assertFalse(showError) }
+                awaitItem().run { assertNull(error) }
+                coVerifyNever { errorManager.addError(any()) }
+                verifyNever { errorMessageProvider.getErrorMessageFor(ImageNotSavedError) }
 
                 viewModel.submitAction(ImageProcessingAction.PictureTaken(isImageSaved = false))
 
-                awaitItem().run { assertTrue(showError) }
-                advanceTimeBy(DURATION_ERROR.inWholeMilliseconds + 1)
-                assertFalse(awaitItem().showError)
+                verifyOnce { errorMessageProvider.getErrorMessageFor(ImageNotSavedError) }
+                coVerifyOnce { errorManager.addError(any()) }
+                awaitItem().run { assertNotNull(error) }
+                advanceTimeBy(DURATION_ERROR_LONG.inWholeMilliseconds + 1)
+                assertNull(awaitItem().error)
             }
         }
 
@@ -272,20 +291,22 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
         }
 
     @Test
-    fun `given empty camera uri and no saved uri, when camera picture taken, then error is shown and hidden after duration`() =
+    fun `given empty camera uri and no saved uri, when camera picture taken, then ImageNotSaved error is shown and hidden after duration`() =
         runTest {
             val viewModel = createSUT()
             viewModel.state.test {
+                verifyNever { errorMessageProvider.getErrorMessageFor(any()) }
                 awaitItem().run {
                     assertEquals("", cameraUri)
-                    assertFalse(showError)
+                    assertNull(error)
                 }
 
                 viewModel.submitAction(ImageProcessingAction.PictureTaken(isImageSaved = true))
 
-                awaitItem().run { assertTrue(showError) }
-                advanceTimeBy(DURATION_ERROR.inWholeMilliseconds + 1)
-                assertFalse(awaitItem().showError)
+                verifyOnce { errorMessageProvider.getErrorMessageFor(ImageNotSavedError) }
+                awaitItem().run { assertNotNull(error) }
+                advanceTimeBy(DURATION_ERROR_LONG.inWholeMilliseconds + 1)
+                assertNull(awaitItem().error)
             }
         }
 
@@ -472,9 +493,9 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
                 assertEquals(INITIAL_STATE.copy(isProgressVisible = true), awaitItem())
 
                 assertFalse(awaitItem().isProgressVisible)
-                assertTrue(awaitItem().showError)
-                advanceTimeBy(DURATION_ERROR.inWholeMilliseconds + 1)
-                assertFalse(awaitItem().showError)
+                assertNotNull(awaitItem().error)
+                advanceTimeBy(DURATION_ERROR_LONG.inWholeMilliseconds + 1)
+                assertNull(awaitItem().error)
             }
         }
 

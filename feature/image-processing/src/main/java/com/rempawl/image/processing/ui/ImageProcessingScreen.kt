@@ -19,7 +19,6 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -106,7 +105,7 @@ private fun ImagesScreen(
             }
         },
         snackbarHost = {
-            AppSnackbarHost(snackbarHostState, state.showError)
+            AppSnackbarHost(snackbarHostState, state.error)
         },
 
         modifier = Modifier

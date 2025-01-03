@@ -39,7 +39,7 @@ class ErrorManagerImpl : ErrorManager {
      * sent via [addError]. Once [AppError.duration] has elapsed or [removeCurrentError] is called
      * `Unit.left()` will be emitted to remove the current error.
      */
-    override val errors: Flow<Either<Unit, AppError>> = flow {
+    override val errors: Flow<Either<Unit, UIError>> = flow {
         pendingErrors.receiveAsFlow().collect { error ->
             emit(error.right())
 
