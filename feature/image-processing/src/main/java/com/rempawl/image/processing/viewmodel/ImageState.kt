@@ -3,7 +3,7 @@ package com.rempawl.image.processing.viewmodel
 import android.os.Parcelable
 import androidx.compose.runtime.Immutable
 import kotlinx.parcelize.Parcelize
-// todo make selaed class and add state.error
+// todo make sealed class and add state.error
 @Immutable
 @Parcelize
 data class ImageState(
