@@ -9,13 +9,13 @@ import com.rempawl.core.kotlin.error.toUIError
 import com.rempawl.core.kotlin.error.toUiError
 import com.rempawl.core.kotlin.extensions.onError
 import com.rempawl.core.kotlin.extensions.onSuccess
+import com.rempawl.core.kotlin.progress.ProgressSemaphore
 import com.rempawl.core.viewmodel.mvi.BaseMVIViewModel
 import com.rempawl.core.viewmodel.saveable.Saveable
 import com.rempawl.image.processing.error.ImageNotSavedError
 import com.rempawl.image.processing.error.ImageProcessingErrorMessageProvider
 import com.rempawl.image.processing.usecase.GetCameraPhotoUriUseCase
 import com.rempawl.image.processing.usecase.ProcessImageUseCase
-import kotlinx.coroutines.coroutineScope
 
 /**
  * ViewModel for image processing.
@@ -29,11 +29,16 @@ class ImageProcessingViewModel(
     private val getCameraPhotoUriUseCase: GetCameraPhotoUriUseCase,
     private val saveable: Saveable,
     private val errorMessageProvider: ImageProcessingErrorMessageProvider,
+    progressSemaphore: ProgressSemaphore,
     errorManager: ErrorManager
 ) : BaseMVIViewModel<ImageProcessingState, ImageProcessingAction, ImageProcessingEffect>(
-    errorManager,
-    ImageProcessingState()
+    errorManager = errorManager,
+    progressSemaphore = progressSemaphore,
+    initialState = ImageProcessingState()
 ) {
+    override suspend fun onProgressChange(hasProgress: Boolean) {
+        setState { copy(isProgressVisible = hasProgress) }
+    }
 
     override fun doOnStateSubscription(): suspend () -> Unit = {
         retrieveSavedState()?.let { savedState -> setState { savedState } }
@@ -104,7 +109,7 @@ class ImageProcessingViewModel(
     }
 
     private suspend fun handlePictureTakenResult(action: ImageProcessingAction.PictureTaken) {
-        val cameraUri = state.value.cameraUri.ifEmpty {
+        val cameraUri = currentState.cameraUri.ifEmpty {
             retrieveSavedState()?.cameraUri.orEmpty()
         }
         if (action.isImageSaved && cameraUri.isNotEmpty()) {
@@ -124,16 +129,16 @@ class ImageProcessingViewModel(
 
     // todo some base progress watcher and withProgress extensions
     private suspend fun processImage(imageUri: String) {
-        setState { copy(isProgressVisible = true) }
-        processInputImage(imageUri)
+        withProgress {
+            processInputImage(imageUri)
+        }
     }
 
-    private suspend fun processInputImage(imageUri: String) = coroutineScope {
+    private suspend fun processInputImage(imageUri: String) = withProgress {
         processImageUseCase.call(imageUri)
             .onSuccess { (texts, objects, imgWidth, imgHeight) ->
                 setState {
                     copy(
-                        isProgressVisible = false,
                         detectedTextObjects = texts,
                         detectedObjects = objects,
                         imageState = ImageState(
@@ -145,9 +150,6 @@ class ImageProcessingViewModel(
                 }
             }.onError {
                 addError(it.toUIError(errorMessageProvider)) // todo error subclass
-                setState {
-                    copy(isProgressVisible = false)
-                }
             }
     }
 

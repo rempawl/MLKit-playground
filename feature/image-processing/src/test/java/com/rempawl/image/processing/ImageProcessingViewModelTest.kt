@@ -9,6 +9,7 @@ import com.rempawl.bottomsheet.ImageSourcePickerOption.CAMERA
 import com.rempawl.bottomsheet.ImageSourcePickerOption.GALLERY
 import com.rempawl.core.kotlin.error.DURATION_ERROR_LONG
 import com.rempawl.core.kotlin.error.ErrorManagerImpl
+import com.rempawl.core.kotlin.progress.ProgressSemaphoreImpl
 import com.rempawl.core.viewmodel.saveable.Saveable
 import com.rempawl.image.processing.error.ImageNotSavedError
 import com.rempawl.image.processing.error.ImageProcessingErrorMessageProvider
@@ -36,6 +37,7 @@ import io.mockk.spyk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.advanceTimeBy
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -53,7 +55,7 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
     private val getCameraUriUseCase = mockk<GetCameraPhotoUriUseCase>()
     private val imageProcessingUseCase = mockk<ProcessImageUseCase>()
     private val errorMessageProvider = mockk<ImageProcessingErrorMessageProvider>() {
-        every { getErrorMessageFor(ImageNotSavedError) } returns "error"
+        every { getErrorMessageFor(any()) } returns "error"
     }
     private val errorManager = spyk(ErrorManagerImpl())
 
@@ -71,7 +73,8 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
             getCameraPhotoUriUseCase = getCameraUriUseCase,
             saveable = saveable,
             errorMessageProvider = errorMessageProvider,
-            errorManager = errorManager
+            errorManager = errorManager,
+            progressSemaphore = ProgressSemaphoreImpl()
         )
     }
 
@@ -353,7 +356,8 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
                 viewModel.submitAction(ImageProcessingAction.PictureTaken(isImageSaved = true))
 
                 awaitItem().run { assertTrue(isProgressVisible) }
-                awaitItem().run { assertFalse(isProgressVisible) }
+                advanceUntilIdle()
+                expectMostRecentItem().run { assertFalse(isProgressVisible) }
             }
         }
 
@@ -376,7 +380,6 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
 
                 awaitItem().run { assertTrue(isProgressVisible) }
                 awaitItem().run {
-                    assertFalse(isProgressVisible)
                     assertEquals(
                         ImageState(
                             uri = CAMERA_URI_STRING,
@@ -402,6 +405,9 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
                     assertEquals(
                         listOf(DetectedTextObject(TEST_RECT)), detectedTextObjects
                     )
+                }
+                awaitItem().run {
+                    assertFalse(isProgressVisible)
                 }
             }
         }
@@ -438,7 +444,7 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
     }
 
     @Test
-    fun `when image is processed, then progress is hidden and detected objects and texts are set`() =
+    fun `when image is processed, then detected objects and texts are set`() =
         runTest {
             val viewModel = createSUT(processImageDelay = TEST_DELAY)
             viewModel.state.test {
@@ -451,6 +457,7 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
                 )
 
                 assertEquals(INITIAL_STATE.copy(isProgressVisible = true), awaitItem())
+                advanceUntilIdle()
                 assertEquals(
                     ImageProcessingState(
                         isProgressVisible = false,
@@ -472,7 +479,7 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
                         ),
                         detectedTextObjects = listOf(DetectedTextObject(TEST_RECT))
                     ),
-                    awaitItem()
+                    expectMostRecentItem()
                 )
             }
         }
@@ -490,12 +497,13 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
                 viewModel.submitAction(
                     ImageProcessingAction.GalleryImagePicked("uri")
                 )
-                assertEquals(INITIAL_STATE.copy(isProgressVisible = true), awaitItem())
-
-                assertFalse(awaitItem().isProgressVisible)
+                assertTrue(awaitItem().isProgressVisible)
                 assertNotNull(awaitItem().error)
                 advanceTimeBy(DURATION_ERROR_LONG.inWholeMilliseconds + 1)
-                assertNull(awaitItem().error)
+                awaitItem().run {
+                    assertNull(error)
+                    assertFalse(isProgressVisible)
+                }
             }
         }
 

@@ -56,7 +56,7 @@ internal class SaveableImpl(
                     .get<Bundle>(param.keyProvider)
                     ?.run { parcelableUtils.getParcelableFrom(this, param.keyState) }
             }
-                .onLeft { it.printStackTrace() } // todo return either?
+                .onLeft { it.printStackTrace() }
                 .getOrNull()
             // todo test
         }
