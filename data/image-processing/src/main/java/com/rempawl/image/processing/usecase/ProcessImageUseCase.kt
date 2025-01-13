@@ -32,7 +32,6 @@ class ProcessImageUseCase internal constructor(
                     imageWidth = inputImage.width,
                     imageHeight = inputImage.height
                 )
-                // todo AppError class end different error types
             }
         }
     }

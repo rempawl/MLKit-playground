@@ -1,7 +1,6 @@
 package com.rempawl.image.processing
 
 import android.graphics.RectF
-import app.cash.turbine.test
 import arrow.core.left
 import arrow.core.right
 import com.rempawl.bottomsheet.GalleryPickerOption
@@ -25,8 +24,11 @@ import com.rempawl.image.processing.viewmodel.ImageProcessingViewModel
 import com.rempawl.image.processing.viewmodel.ImageProcessingViewModel.Companion.KEY_SAVED_STATE_PROVIDER
 import com.rempawl.image.processing.viewmodel.ImageProcessingViewModel.Companion.KEY_STATE
 import com.rempawl.image.processing.viewmodel.ImageState
+import com.rempawl.test.utils.BaseCoroutineTest
 import com.rempawl.test.utils.coVerifyNever
 import com.rempawl.test.utils.coVerifyOnce
+import com.rempawl.test.utils.testEffects
+import com.rempawl.test.utils.testState
 import com.rempawl.test.utils.verifyNever
 import com.rempawl.test.utils.verifyOnce
 import io.mockk.coEvery
@@ -49,12 +51,12 @@ import kotlin.test.assertTrue
 
 /* ktlint-disable max-line-length */
 @ExperimentalCoroutinesApi
-class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() {
+class ImageProcessingViewModelTest : BaseCoroutineTest() {
 
     private val saveable = mockk<Saveable>(relaxUnitFun = true)
     private val getCameraUriUseCase = mockk<GetCameraPhotoUriUseCase>()
     private val imageProcessingUseCase = mockk<ProcessImageUseCase>()
-    private val errorMessageProvider = mockk<ImageProcessingErrorMessageProvider>() {
+    private val errorMessageProvider = mockk<ImageProcessingErrorMessageProvider> {
         every { getErrorMessageFor(any()) } returns "error"
     }
     private val errorManager = spyk(ErrorManagerImpl())
@@ -78,24 +80,23 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
         )
     }
 
+
     @Test
     fun `when initialized then empty state set`() = runTest {
-        val viewModel = createSUT()
-        viewModel.state.test {
+        createSUT().testState {
             assertEquals(INITIAL_STATE, awaitItem())
         }
     }
 
     @Test
     fun `when select image fab clicked, then source picker options set`() = runTest {
-        val viewmodel = createSUT() // todo extensions for state & effects testing
-        viewmodel.state.test {
+        createSUT().testState {
             awaitItem().run {
                 assertEquals(emptyList(), sourcePickerOptions)
                 assertFalse(isSourcePickerVisible)
             }
 
-            viewmodel.submitAction(ImageProcessingAction.SelectImageFabClicked)
+            submitAction(ImageProcessingAction.SelectImageFabClicked)
 
             awaitItem().run {
                 assertEquals(
@@ -111,12 +112,11 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
     @Test
     fun `given source picker visible, when hide image source picker called, then source picker is hidden`() =
         runTest {
-            val viewModel = createSUT()
-            viewModel.state.test {
-                viewModel.submitAction(ImageProcessingAction.SelectImageFabClicked)
+            createSUT().testState {
+                submitAction(ImageProcessingAction.SelectImageFabClicked)
                 expectMostRecentItem().run { assertTrue(isSourcePickerVisible) }
 
-                viewModel.submitAction(ImageProcessingAction.HideImageSourcePicker)
+                submitAction(ImageProcessingAction.HideImageSourcePicker)
 
                 awaitItem().run {
                     assertFalse(isSourcePickerVisible)
@@ -128,12 +128,11 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
     @Test
     fun `given source picker visible, when gallery option selected, then source picker is hidden`() =
         runTest {
-            val viewModel = createSUT()
-            viewModel.state.test {
-                viewModel.submitAction(ImageProcessingAction.SelectImageFabClicked)
+            createSUT().testState {
+                submitAction(ImageProcessingAction.SelectImageFabClicked)
                 expectMostRecentItem().run { assertTrue(isSourcePickerVisible) }
 
-                viewModel.submitAction(
+                submitAction(
                     ImageProcessingAction.ImageSourcePickerOptionSelected(
                         GALLERY
                     )
@@ -149,12 +148,11 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
     @Test
     fun `given source picker visible, when camera option selected, then source picker is hidden`() =
         runTest {
-            val viewModel = createSUT()
-            viewModel.state.test {
-                viewModel.submitAction(ImageProcessingAction.SelectImageFabClicked)
+            createSUT().testState {
+                submitAction(ImageProcessingAction.SelectImageFabClicked)
                 expectMostRecentItem().run { assertTrue(isSourcePickerVisible) }
 
-                viewModel.submitAction(
+                submitAction(
                     ImageProcessingAction.ImageSourcePickerOptionSelected(
                         CAMERA
                     )
@@ -171,10 +169,9 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
     @Test
     fun `when camera option selected and photo uri retrieved,then camera uri is set `() =
         runTest {
-            val viewModel = createSUT()
-            viewModel.state.test {
+            createSUT().testState {
                 coVerifyNever { getCameraUriUseCase.call(Unit) }
-                viewModel.submitAction(
+                submitAction(
                     ImageProcessingAction.ImageSourcePickerOptionSelected(
                         CAMERA
                     )
@@ -192,11 +189,10 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
     @Test
     fun `when gallery option selected on image source picker,then OpenGallery effect is set with Image Only option `() =
         runTest {
-            val viewModel = createSUT()
-            viewModel.effects.test {
+            createSUT().testEffects {
                 expectNoEvents()
 
-                viewModel.submitAction(
+                submitAction(
                     ImageProcessingAction.ImageSourcePickerOptionSelected(
                         GALLERY
                     )
@@ -214,11 +210,10 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
     @Test
     fun `when camera option selected and photo uri retrieved,then TakePicture effect is set with correct uri `() =
         runTest {
-            val viewModel = createSUT()
-            viewModel.effects.test {
+            createSUT().testEffects {
                 expectNoEvents()
 
-                viewModel.submitAction(
+                submitAction(
                     ImageProcessingAction.ImageSourcePickerOptionSelected(
                         CAMERA
                     )
@@ -234,11 +229,10 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
     @Test
     fun `when camera option selected and photo uri retrieval fails, then error is shown and hidden after duration`() =
         runTest {
-            val viewModel = createSUT(cameraUriError = FAKE_THROWABLE)
-            viewModel.state.test {
+            createSUT(cameraUriError = FAKE_THROWABLE).testState {
                 awaitItem().run { assertNull(error) }
                 coVerifyNever { getCameraUriUseCase.call(Unit) }
-                viewModel.submitAction(
+                submitAction(
                     ImageProcessingAction.ImageSourcePickerOptionSelected(
                         CAMERA
                     )
@@ -257,13 +251,12 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
     @Test
     fun `when camera picture taken but not saved, then ImageNotSaved error shown and hidden after duration`() =
         runTest {
-            val viewModel = createSUT()
-            viewModel.state.test {
+            createSUT().testState {
                 awaitItem().run { assertNull(error) }
                 coVerifyNever { errorManager.addError(any()) }
                 verifyNever { errorMessageProvider.getErrorMessageFor(ImageNotSavedError) }
 
-                viewModel.submitAction(ImageProcessingAction.PictureTaken(isImageSaved = false))
+                submitAction(ImageProcessingAction.PictureTaken(isImageSaved = false))
 
                 verifyOnce { errorMessageProvider.getErrorMessageFor(ImageNotSavedError) }
                 coVerifyOnce { errorManager.addError(any()) }
@@ -276,15 +269,14 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
     @Test
     fun `given empty camera uri, when camera picture taken, then uri retrieved from savedState`() =
         runTest {
-            val viewModel = createSUT()
-            viewModel.state.test {
+            createSUT().testState {
                 saveable.mock(ImageProcessingState(cameraUri = SAVED_CAMERA_URI_STRING))
                 coVerifyOnce {
                     saveable.getState<ImageProcessingState>(param = any())
                 }
                 awaitItem().run { assertEquals("", cameraUri) }
 
-                viewModel.submitAction(ImageProcessingAction.PictureTaken(isImageSaved = true))
+                submitAction(ImageProcessingAction.PictureTaken(isImageSaved = true))
 
                 coVerify(exactly = 2) {
                     saveable.getState<ImageProcessingState>(param = any())
@@ -296,15 +288,14 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
     @Test
     fun `given empty camera uri and no saved uri, when camera picture taken, then ImageNotSaved error is shown and hidden after duration`() =
         runTest {
-            val viewModel = createSUT()
-            viewModel.state.test {
+            createSUT().testState {
                 verifyNever { errorMessageProvider.getErrorMessageFor(any()) }
                 awaitItem().run {
                     assertEquals("", cameraUri)
                     assertNull(error)
                 }
 
-                viewModel.submitAction(ImageProcessingAction.PictureTaken(isImageSaved = true))
+                submitAction(ImageProcessingAction.PictureTaken(isImageSaved = true))
 
                 verifyOnce { errorMessageProvider.getErrorMessageFor(ImageNotSavedError) }
                 awaitItem().run { assertNotNull(error) }
@@ -316,8 +307,7 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
     @Test
     fun `given empty camera uri, when camera picture taken, then uri retrieved from saved state is processed`() =
         runTest {
-            val viewModel = createSUT()
-            viewModel.state.test {
+            createSUT().testState {
                 saveable.mock(state = ImageProcessingState(cameraUri = SAVED_CAMERA_URI_STRING))
                 awaitItem().run {
                     assertEquals("", cameraUri)
@@ -326,7 +316,7 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
                     assertEquals(ImageState(), imageState)
                 }
 
-                viewModel.submitAction(ImageProcessingAction.PictureTaken(isImageSaved = true))
+                submitAction(ImageProcessingAction.PictureTaken(isImageSaved = true))
 
                 expectMostRecentItem().run {
                     assertTrue(detectedObjects.isNotEmpty())
@@ -346,14 +336,13 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
     @Test
     fun `when processing camera photo, then progress is shown and hidden`() =
         runTest {
-            val viewModel = createSUT(processImageDelay = TEST_DELAY)
-            viewModel.state.test {
-                viewModel.submitAction(
+            createSUT(processImageDelay = TEST_DELAY).testState {
+                submitAction(
                     ImageProcessingAction.ImageSourcePickerOptionSelected(CAMERA)
                 )
                 expectMostRecentItem().run { assertFalse(isProgressVisible) }
 
-                viewModel.submitAction(ImageProcessingAction.PictureTaken(isImageSaved = true))
+                submitAction(ImageProcessingAction.PictureTaken(isImageSaved = true))
 
                 awaitItem().run { assertTrue(isProgressVisible) }
                 advanceUntilIdle()
@@ -364,19 +353,18 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
     @Test
     fun `when camera photo processed, then imageState detected objects and texts are set `() =
         runTest {
-            val viewModel = createSUT(processImageDelay = TEST_DELAY)
-            viewModel.state.test {
+            createSUT(processImageDelay = TEST_DELAY).testState {
                 awaitItem().run {
                     assertEquals(emptyList(), detectedObjects)
                     assertEquals(emptyList(), detectedTextObjects)
                     assertEquals("", cameraUri)
                 }
 
-                viewModel.submitAction(
+                submitAction(
                     ImageProcessingAction.ImageSourcePickerOptionSelected(CAMERA)
                 )
                 expectMostRecentItem().run { assertEquals(CAMERA_URI_STRING, cameraUri) }
-                viewModel.submitAction(ImageProcessingAction.PictureTaken(true))
+                submitAction(ImageProcessingAction.PictureTaken(true))
 
                 awaitItem().run { assertTrue(isProgressVisible) }
                 awaitItem().run {
@@ -428,11 +416,10 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
 
     @Test
     fun `when image selected then progress is shown and uri is set`() = runTest {
-        val viewModel = createSUT(processImageDelay = TEST_DELAY)
-        viewModel.state.test {
+        createSUT(processImageDelay = TEST_DELAY).testState {
             assertEquals(INITIAL_STATE, awaitItem())
 
-            viewModel.submitAction(
+            submitAction(
                 ImageProcessingAction.GalleryImagePicked(
                     "uri",
                 )
@@ -446,11 +433,10 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
     @Test
     fun `when image is processed, then detected objects and texts are set`() =
         runTest {
-            val viewModel = createSUT(processImageDelay = TEST_DELAY)
-            viewModel.state.test {
+            createSUT(processImageDelay = TEST_DELAY).testState {
                 assertEquals(INITIAL_STATE, awaitItem())
 
-                viewModel.submitAction(
+                submitAction(
                     ImageProcessingAction.GalleryImagePicked(
                         "uri",
                     )
@@ -487,14 +473,13 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
     @Test
     fun `when error occurs then progress is hidden and error is shown and hidden after duration`() =
         runTest {
-            val viewModel = createSUT(
+            createSUT(
                 textDetectionError = FAKE_THROWABLE,
                 processImageDelay = TEST_DELAY
-            )
-            viewModel.state.test {
+            ).testState {
                 assertEquals(INITIAL_STATE, awaitItem())
 
-                viewModel.submitAction(
+                submitAction(
                     ImageProcessingAction.GalleryImagePicked("uri")
                 )
                 assertTrue(awaitItem().isProgressVisible)
@@ -509,11 +494,10 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
 
     @Test
     fun `when lifecycle stopped, then most recent state saved`() = runTest {
-        val viewModel = createSUT()
-        viewModel.state.test {
+        createSUT().testState {
             coVerifyNever { saveable.saveState<ImageProcessingState>(any()) }
 
-            viewModel.submitAction(ImageProcessingAction.LifecycleStopped)
+            submitAction(ImageProcessingAction.LifecycleStopped)
 
             coVerifyOnce {
                 saveable.saveState(
@@ -535,8 +519,7 @@ class ImageProcessingViewModelTest : com.rempawl.test.utils.BaseCoroutineTest() 
             detectedTextObjects = listOf(DetectedTextObject(TEST_RECT)),
             imageState = ImageState(TEST_HEIGHT, TEST_WIDTH, CAMERA_URI_STRING),
         )
-        val viewModel = createSUT(savedState = savedState)
-        viewModel.state.test {
+        createSUT(savedState = savedState).testState {
             assertEquals(savedState, awaitItem())
 
             expectNoEvents()
