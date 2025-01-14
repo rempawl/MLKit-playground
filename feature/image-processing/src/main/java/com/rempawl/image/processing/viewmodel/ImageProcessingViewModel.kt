@@ -16,6 +16,7 @@ import com.rempawl.image.processing.error.ImageNotSavedError
 import com.rempawl.image.processing.error.ImageProcessingErrorMessageProvider
 import com.rempawl.image.processing.usecase.GetCameraPhotoUriUseCase
 import com.rempawl.image.processing.usecase.ProcessImageUseCase
+import kotlinx.coroutines.coroutineScope
 
 /**
  * ViewModel for image processing.
@@ -127,14 +128,13 @@ class ImageProcessingViewModel(
         }
     }
 
-    // todo some base progress watcher and withProgress extensions
     private suspend fun processImage(imageUri: String) {
         withProgress {
             processInputImage(imageUri)
         }
     }
 
-    private suspend fun processInputImage(imageUri: String) = withProgress {
+    private suspend fun processInputImage(imageUri: String) = coroutineScope {
         processImageUseCase.call(imageUri)
             .onSuccess { (texts, objects, imgWidth, imgHeight) ->
                 setState {

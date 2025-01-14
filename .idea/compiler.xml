@@ -8,6 +8,7 @@
       <module name="MlKit-playground.core.image-processing" target="11" />
       <module name="MlKit-playground.core.image-processing.main" target="11" />
       <module name="MlKit-playground.core.image-processing.test" target="11" />
+      <module name="MlKit-playground.core.test-utils.test" target="17" />
     </bytecodeTargetLevel>
   </component>
 </project>
