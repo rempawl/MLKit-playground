@@ -3,9 +3,9 @@ package com.rempawl.image.processing
 import android.graphics.RectF
 import arrow.core.left
 import arrow.core.right
-import com.rempawl.bottomsheet.GalleryPickerOption
-import com.rempawl.bottomsheet.ImageSourcePickerOption.CAMERA
-import com.rempawl.bottomsheet.ImageSourcePickerOption.GALLERY
+import com.rempawl.core.ui.bottomsheet.GalleryPickerOption
+import com.rempawl.core.ui.bottomsheet.ImageSourcePickerOption.CAMERA
+import com.rempawl.core.ui.bottomsheet.ImageSourcePickerOption.GALLERY
 import com.rempawl.core.kotlin.error.DURATION_ERROR_LONG
 import com.rempawl.core.kotlin.error.ErrorManagerImpl
 import com.rempawl.core.kotlin.progress.ProgressSemaphoreImpl

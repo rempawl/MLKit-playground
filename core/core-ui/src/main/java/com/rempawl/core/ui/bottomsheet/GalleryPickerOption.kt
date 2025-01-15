@@ -1,8 +1,8 @@
-package com.rempawl.bottomsheet
+package com.rempawl.core.ui.bottomsheet
 
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import com.rempawl.bottomsheet.GalleryPickerOption.IMAGE_ONLY
+import com.rempawl.core.ui.bottomsheet.GalleryPickerOption.IMAGE_ONLY
 
 enum class GalleryPickerOption {
     IMAGE_ONLY;

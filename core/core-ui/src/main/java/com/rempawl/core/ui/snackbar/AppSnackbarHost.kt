@@ -1,4 +1,4 @@
-package com.rempawl.snackbar
+package com.rempawl.core.ui.snackbar
 
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState

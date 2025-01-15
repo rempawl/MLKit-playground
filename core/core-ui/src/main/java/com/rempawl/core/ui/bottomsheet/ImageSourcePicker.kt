@@ -1,4 +1,4 @@
-package com.rempawl.bottomsheet
+package com.rempawl.core.ui.bottomsheet
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer

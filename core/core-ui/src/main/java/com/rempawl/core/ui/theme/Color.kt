@@ -1,4 +1,4 @@
-package com.rempawl.theme
+package com.rempawl.core.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

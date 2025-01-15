@@ -1,7 +1,7 @@
 package com.rempawl.image.processing.viewmodel
 
 import com.rempawl.core.viewmodel.mvi.Effect
-import com.rempawl.bottomsheet.GalleryPickerOption
+import com.rempawl.core.ui.bottomsheet.GalleryPickerOption
 
 sealed interface ImageProcessingEffect : Effect {
     data class TakePicture(val uri: String) : ImageProcessingEffect

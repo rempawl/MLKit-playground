@@ -56,8 +56,8 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
-import com.rempawl.bottomsheet.ImageSourcePickerBottomSheet
-import com.rempawl.bottomsheet.toPickVisualMediaRequest
+import com.rempawl.core.ui.bottomsheet.ImageSourcePickerBottomSheet
+import com.rempawl.core.ui.bottomsheet.toPickVisualMediaRequest
 import com.rempawl.core.ui.createScaleMatrix
 import com.rempawl.core.ui.toComposeRect
 import com.rempawl.image.processing.R
@@ -70,7 +70,7 @@ import com.rempawl.image.processing.viewmodel.ImageProcessingState
 import com.rempawl.image.processing.viewmodel.ImageProcessingViewModel
 import com.rempawl.image.processing.viewmodel.ImageState
 import com.rempawl.mlkit_playground.ui.theme.MlKitplaygroundTheme
-import com.rempawl.snackbar.AppSnackbarHost
+import com.rempawl.core.ui.snackbar.AppSnackbarHost
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import org.koin.androidx.compose.navigation.koinNavViewModel
