@@ -46,7 +46,6 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
-import androidx.compose.ui.tooling.preview.datasource.CollectionPreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
@@ -90,14 +89,14 @@ fun ImageProcessingScreen(
         effectsProvider = { viewModel.effects },
         submitAction = { viewModel.submitAction(it) }
     )
-    ImagesScreen(
+    ImagesProcessingScreen(
         state = state,
         submitAction = { viewModel.submitAction(it) },
     )
 }
 
 @Composable
-private fun ImagesScreen(
+private fun ImagesProcessingScreen(
     state: ImageProcessingState,
     submitAction: (ImageProcessingAction) -> Unit,
 ) {
@@ -116,7 +115,7 @@ private fun ImagesScreen(
             .systemBarsPadding()
             .fillMaxSize(),
     ) { paddingValues ->
-        ImageProcessingScreen(
+        ImageProcessingScreenContent(
             state, modifier = Modifier.padding(paddingValues)
         )
         if (state.isSourcePickerVisible) {
@@ -141,15 +140,18 @@ private fun ToolbarContent() {
 
 @Composable
 private fun FabContent(pickMedia: () -> Unit) {
-    FloatingActionButton(onClick = { pickMedia() }, content = {
-        Icon(
-            painter = painterResource(R.drawable.ic_add_photo), contentDescription = null
-        )
-    })
+    FloatingActionButton(
+        onClick = { pickMedia() },
+        content = {
+            Icon(
+                painter = painterResource(R.drawable.ic_add_photo),
+                contentDescription = null
+            )
+        })
 }
 
 @Composable
-private fun ImageProcessingScreen(
+private fun ImageProcessingScreenContent(
     state: ImageProcessingState,
     modifier: Modifier,
 ) {
@@ -301,26 +303,12 @@ private fun EffectsObserver(
     }
 }
 
-class ImageProcessingPreviewProvider : CollectionPreviewParameterProvider<ImageProcessingState>(
-
-    listOf(
-        ImageProcessingState(),
-        ImageProcessingState(
-            imageState = ImageState(
-                1024, 1024, "uri"
-            )
-        ),
-    )
-)
-
-
 @Preview(showBackground = true)
 @Composable
-fun ImagePreview(
+fun ImageProcessingScreenPreview(
     @PreviewParameter(ImageProcessingPreviewProvider::class) state: ImageProcessingState
 ) {
-
     MlKitplaygroundTheme {
-        ImagesScreen(state) {}
+        ImagesProcessingScreen(state) {}
     }
 }
