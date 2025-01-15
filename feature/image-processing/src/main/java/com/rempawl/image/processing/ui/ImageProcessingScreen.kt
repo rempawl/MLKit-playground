@@ -44,6 +44,9 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.datasource.CollectionPreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
@@ -54,6 +57,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
+import com.rempawl.bottomsheet.ImageSourcePickerBottomSheet
 import com.rempawl.bottomsheet.toPickVisualMediaRequest
 import com.rempawl.core.ui.createScaleMatrix
 import com.rempawl.core.ui.toComposeRect
@@ -61,16 +65,17 @@ import com.rempawl.image.processing.R
 import com.rempawl.image.processing.model.DetectedObject
 import com.rempawl.image.processing.model.DetectedTextObject
 import com.rempawl.image.processing.viewmodel.ImageProcessingAction
+import com.rempawl.image.processing.viewmodel.ImageProcessingAction.ImageSourcePickerOptionSelected
 import com.rempawl.image.processing.viewmodel.ImageProcessingEffect
 import com.rempawl.image.processing.viewmodel.ImageProcessingState
 import com.rempawl.image.processing.viewmodel.ImageProcessingViewModel
 import com.rempawl.image.processing.viewmodel.ImageState
+import com.rempawl.mlkit_playground.ui.theme.MlKitplaygroundTheme
 import com.rempawl.snackbar.AppSnackbarHost
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import org.koin.androidx.compose.navigation.koinNavViewModel
 
-// todo previews!
 
 @Destination<RootGraph>(start = true)
 @Composable
@@ -107,17 +112,19 @@ private fun ImagesScreen(
         snackbarHost = {
             AppSnackbarHost(snackbarHostState, state.error)
         },
-
         modifier = Modifier
             .systemBarsPadding()
             .fillMaxSize(),
     ) { paddingValues ->
-
         ImageProcessingScreen(
             state, modifier = Modifier.padding(paddingValues)
         )
         if (state.isSourcePickerVisible) {
-            ImageSourcePickerBottomSheet(submitAction, state)
+            ImageSourcePickerBottomSheet(
+                pickerOptions = state.sourcePickerOptions,
+                onPickerOptionSelected = { submitAction(ImageSourcePickerOptionSelected(it)) },
+                onDismiss = { submitAction(ImageProcessingAction.HideImageSourcePicker) }
+            )
         }
     }
 }
@@ -291,5 +298,29 @@ private fun EffectsObserver(
                 )
             }
         }
+    }
+}
+
+class ImageProcessingPreviewProvider : CollectionPreviewParameterProvider<ImageProcessingState>(
+
+    listOf(
+        ImageProcessingState(),
+        ImageProcessingState(
+            imageState = ImageState(
+                1024, 1024, "uri"
+            )
+        ),
+    )
+)
+
+
+@Preview(showBackground = true)
+@Composable
+fun ImagePreview(
+    @PreviewParameter(ImageProcessingPreviewProvider::class) state: ImageProcessingState
+) {
+
+    MlKitplaygroundTheme {
+        ImagesScreen(state) {}
     }
 }

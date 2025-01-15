@@ -73,6 +73,7 @@ dependencies {
     implementation(project(":feature:image-processing"))
 
     implementation(libs.compose.destinations.core)
+    implementation(project(":core:core-ui"))
     ksp(libs.compose.destinations.ksp)
     implementation(libs.compose.destinations.bottomsheet)
 
