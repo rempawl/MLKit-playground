@@ -2,7 +2,7 @@ package com.rempawl.image.processing.viewmodel
 
 import android.os.Parcelable
 import androidx.compose.runtime.Immutable
-import com.rempawl.bottomsheet.ImageSourcePickerOption
+import com.rempawl.core.ui.bottomsheet.ImageSourcePickerOption
 import com.rempawl.core.kotlin.error.UIError
 import com.rempawl.image.processing.model.DetectedObject
 import com.rempawl.image.processing.model.DetectedTextObject

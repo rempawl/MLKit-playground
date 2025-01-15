@@ -1,7 +1,7 @@
 package com.rempawl.image.processing.viewmodel
 
 import com.rempawl.core.viewmodel.mvi.Action
-import com.rempawl.bottomsheet.ImageSourcePickerOption
+import com.rempawl.core.ui.bottomsheet.ImageSourcePickerOption
 
 sealed interface ImageProcessingAction : Action {
     data object SelectImageFabClicked : ImageProcessingAction

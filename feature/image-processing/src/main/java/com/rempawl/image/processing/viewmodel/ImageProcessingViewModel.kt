@@ -1,8 +1,8 @@
 package com.rempawl.image.processing.viewmodel
 
 import arrow.core.Either
-import com.rempawl.bottomsheet.GalleryPickerOption
-import com.rempawl.bottomsheet.ImageSourcePickerOption
+import com.rempawl.core.ui.bottomsheet.GalleryPickerOption
+import com.rempawl.core.ui.bottomsheet.ImageSourcePickerOption
 import com.rempawl.core.kotlin.error.ErrorManager
 import com.rempawl.core.kotlin.error.UIError
 import com.rempawl.core.kotlin.error.toUIError

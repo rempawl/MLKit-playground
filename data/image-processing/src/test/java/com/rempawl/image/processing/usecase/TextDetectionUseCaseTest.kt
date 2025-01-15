@@ -4,6 +4,7 @@ import android.graphics.Rect
 import arrow.core.left
 import arrow.core.right
 import com.rempawl.image.processing.model.DetectedTextObject
+import com.rempawl.image.processing.model.TextBlockWrapper
 import com.rempawl.image.processing.repository.MLKitDetectionRepositoryImpl
 import com.rempawl.test.utils.BaseCoroutineTest
 import com.rempawl.test.utils.coVerifyNever
