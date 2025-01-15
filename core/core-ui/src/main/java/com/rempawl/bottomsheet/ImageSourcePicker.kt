@@ -20,9 +20,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.rempawl.core.ui.R
 import com.rempawl.core.ui.spacer.HeightSpacer
+import com.rempawl.mlkit_playground.ui.theme.MlKitplaygroundTheme
 
 /**
  * A bottom sheet that allows the user to select an image source.
@@ -99,4 +101,17 @@ private fun ImageSourcePickerOption.Content(submitAction: (ImageSourcePickerOpti
 private fun ImageSourcePickerOption.getIconPainter() = when (this) {
     ImageSourcePickerOption.CAMERA -> painterResource(R.drawable.ic_camera)
     ImageSourcePickerOption.GALLERY -> painterResource(R.drawable.ic_gallery)
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ImageSourcePickerPreview() {
+    MlKitplaygroundTheme {
+        ImageSourcePicker(
+            listOf(
+                ImageSourcePickerOption.GALLERY, ImageSourcePickerOption.CAMERA
+            ),
+            {},
+        )
+    }
 }

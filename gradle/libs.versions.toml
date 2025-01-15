@@ -6,10 +6,6 @@ coil = "2.6.0"
 coilCompose = "2.6.0"
 composeCompiler = "1.5.1"
 espressoIntents = "3.6.1"
-faceDetection = "16.1.7"
-firebaseCore = "21.1.1"
-firebaseMlModelInterpreter = "22.0.4"
-imageLabeling = "17.0.9"
 junitBom = "5.11.3"
 junitKtx = "1.2.1"
 koinAndroid = "4.0.0"
@@ -36,10 +32,7 @@ mockkAgent = "1.13.13"
 mockkAndroid = "1.13.13"
 objectDetectionCustom = "17.0.2"
 playServicesMlkitTextRecognition = "19.0.1"
-constraintlayout = "2.2.0"
-cameraCore = "1.4.0"
 junitJupiter = "5.9.2"
-material = "1.12.0"
 appcompat = "1.7.0"
 lifecycleViewmodelAndroid = "2.8.7"
 rules = "1.6.1"
@@ -78,7 +71,6 @@ androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecyc
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
 androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
-androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }

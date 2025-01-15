@@ -73,6 +73,7 @@ dependencies {
     implementation(project(":feature:image-processing"))
 
     implementation(libs.compose.destinations.core)
+    implementation(project(":core:core-ui"))
     ksp(libs.compose.destinations.ksp)
     implementation(libs.compose.destinations.bottomsheet)
 
@@ -96,12 +97,10 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.ui.test.junit4)
+
     androidTestImplementation(libs.androidx.junit.ktx)
     androidTestImplementation(libs.leakcanary.android.instrumentation)
     androidTestImplementation(libs.androidx.espresso.intents)
     androidTestImplementation(libs.androidx.rules)
 
-    debugImplementation(libs.androidx.ui.tooling)
-    debugImplementation(libs.androidx.ui.test.manifest)
 }

@@ -5,6 +5,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import com.rempawl.theme.Pink40
+import com.rempawl.theme.Pink80
+import com.rempawl.theme.Purple40
+import com.rempawl.theme.Purple80
+import com.rempawl.theme.PurpleGrey40
+import com.rempawl.theme.PurpleGrey80
+import com.rempawl.theme.Typography
 
 private val DarkColorScheme = darkColorScheme(
     primary = Purple80,
