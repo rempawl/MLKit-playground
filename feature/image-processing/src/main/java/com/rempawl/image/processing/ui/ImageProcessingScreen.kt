@@ -48,6 +48,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.util.fastForEach
 import androidx.core.net.toUri
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
@@ -59,6 +60,7 @@ import com.ramcosta.composedestinations.annotation.RootGraph
 import com.rempawl.core.ui.bottomsheet.ImageSourcePickerBottomSheet
 import com.rempawl.core.ui.bottomsheet.toPickVisualMediaRequest
 import com.rempawl.core.ui.createScaleMatrix
+import com.rempawl.core.ui.snackbar.AppSnackbarHost
 import com.rempawl.core.ui.toComposeRect
 import com.rempawl.image.processing.R
 import com.rempawl.image.processing.model.DetectedObject
@@ -70,7 +72,6 @@ import com.rempawl.image.processing.viewmodel.ImageProcessingState
 import com.rempawl.image.processing.viewmodel.ImageProcessingViewModel
 import com.rempawl.image.processing.viewmodel.ImageState
 import com.rempawl.mlkit_playground.ui.theme.MlKitplaygroundTheme
-import com.rempawl.core.ui.snackbar.AppSnackbarHost
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import org.koin.androidx.compose.navigation.koinNavViewModel
@@ -205,7 +206,7 @@ private fun ImagesContent(
         }
         item {
             ProcessedImage(imageState, imageRequest) { matrix ->
-                detectedObjects.forEach { detectedObject ->
+                detectedObjects.fastForEach { detectedObject ->
                     val scaledRect = matrix.map(detectedObject.rect.toComposeRect())
                     drawOutline(
                         outline = Outline.Rectangle(scaledRect),
@@ -229,7 +230,7 @@ private fun ImagesContent(
         }
         item {
             ProcessedImage(imageState, imageRequest) { matrix ->
-                detectedTextObjects.forEach { detectedTextObject ->
+                detectedTextObjects.fastForEach { detectedTextObject ->
                     val scaledRect = matrix.map(detectedTextObject.rect.toComposeRect())
                     drawOutline(
                         outline = Outline.Rectangle(scaledRect),

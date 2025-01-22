@@ -7,7 +7,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":data:image-processing"))
+    implementation(project(":domain:image-processing"))
 
     implementation(libs.coil.compose)
     implementation(libs.coil)

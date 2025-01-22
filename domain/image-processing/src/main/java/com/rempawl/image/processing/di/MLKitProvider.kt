@@ -8,7 +8,7 @@ import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.TextRecognizer
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 
-object MLKitProvider {
+internal object MLKitProvider {
     private val localModel by lazy {
         LocalModel.Builder()
             .setAssetFilePath("object_labeler.tflite")
@@ -21,7 +21,7 @@ object MLKitProvider {
             .enableMultipleObjects()
             .enableClassification()
             .setMaxPerObjectLabelCount(2)
-            .setClassificationConfidenceThreshold(0.5f)
+            .setClassificationConfidenceThreshold(0.35f)
             .build()
     }
 
