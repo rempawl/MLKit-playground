@@ -28,8 +28,8 @@
             <option value="$PROJECT_DIR$/core/core-ui" />
             <option value="$PROJECT_DIR$/core/core-viewmodel" />
             <option value="$PROJECT_DIR$/core/test-utils" />
-            <option value="$PROJECT_DIR$/data" />
-            <option value="$PROJECT_DIR$/data/image-processing" />
+            <option value="$PROJECT_DIR$/domain" />
+            <option value="$PROJECT_DIR$/domain/image-processing" />
             <option value="$PROJECT_DIR$/feature" />
             <option value="$PROJECT_DIR$/feature/image-processing" />
             <option value="$PROJECT_DIR$/plugin-shared" />

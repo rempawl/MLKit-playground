@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.rempawl.data.image.processing"
+    namespace = "com.rempawl.domain.image.processing"
 }
 
 dependencies {
