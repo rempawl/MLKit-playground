@@ -10,10 +10,10 @@ dependencies {
     implementation(project(":core:core-kotlin"))
     implementation(project(":core:core-viewmodel"))
 
-    implementation(libs.kotlinx.coroutines.test)
-    implementation(libs.mockk)
-    implementation(libs.junit.jupiter)
-    implementation(libs.turbine)
-    implementation(libs.kotlin.test.junit)
-    implementation(libs.koin.test.junit4)
+    api(libs.kotlinx.coroutines.test)
+    api(libs.mockk)
+    api(libs.junit.jupiter)
+    api(libs.turbine)
+    api(libs.kotlin.test.junit)
+    api(libs.koin.test.junit4)
 }

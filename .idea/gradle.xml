@@ -32,10 +32,10 @@
             <option value="$PROJECT_DIR$/domain/image-processing" />
             <option value="$PROJECT_DIR$/feature" />
             <option value="$PROJECT_DIR$/feature/image-processing" />
+            <option value="$PROJECT_DIR$/ktlint-rules" />
             <option value="$PROJECT_DIR$/plugin-shared" />
           </set>
         </option>
-        <option name="resolveExternalAnnotations" value="false" />
       </GradleProjectSettings>
     </option>
   </component>
