@@ -5,16 +5,15 @@ plugins {
     id "com.rempawl.ktlint"
 }
 
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 android {
     compileSdk = libs.versions.compileSDK.get().toInteger()
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
-    }
-
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
     defaultConfig {
@@ -32,7 +31,12 @@ android {
     ktlint {
         android = true
     }
+}
 
+tasks.withType(KotlinCompile).configureEach {
+    compilerOptions {
+        jvmTarget = JvmTarget.JVM_17
+    }
 }
 dependencies {
     implementation(project(":core:core-kotlin"))
@@ -50,10 +54,12 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
 
     testImplementation(project(":core:test-utils"))
+    testImplementation(platform(libs.junit.bom))
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.mockk)
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.turbine)
     testImplementation(libs.kotlin.test.junit)
     testImplementation(libs.koin.test.junit4)
+    testRuntimeOnly(libs.junit.platform.launcher)
 }
